@@ -59,4 +59,5 @@ class PathResult {
 
     public List<City> getPath() { return path; }
     public int getTotalDistance() { return totalDistance; }
+    return;
 }
