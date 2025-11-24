@@ -1,10 +1,9 @@
 // IndonesianCityTree.java
 import javax.swing.*;
-import java.awt.*;
 
 public class IndonesianCityTree extends JFrame {
     public IndonesianCityTree() {
-        setTitle("Indonesian City Tree Navigator (Weighted Graph)");
+        setTitle("Navigasi Kota Indonesia - Pencari Jalur Tercepat");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         CityTreePanel panel = new CityTreePanel();
@@ -16,7 +15,6 @@ public class IndonesianCityTree extends JFrame {
     }
 
     public static void main(String[] args) {
-        // Runs the GUI setup on the Event Dispatch Thread (EDT)
         SwingUtilities.invokeLater(() -> new IndonesianCityTree());
     }
 }
