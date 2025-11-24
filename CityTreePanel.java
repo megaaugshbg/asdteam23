@@ -12,13 +12,38 @@ public class CityTreePanel extends JPanel {
     private int offsetX, offsetY;
     private City pathStart, pathEnd;
     private Path currentPath;
+    private AnimationController animationController;
+    private JButton findPathButton, animateButton, resetButton;
 
     public CityTreePanel() {
         cities = new ArrayList<>();
+        animationController = new AnimationController(this);
         setupCities();
         setupMouseListeners();
+        setupButtons();
         setPreferredSize(new Dimension(1000, 700));
         setBackground(new Color(240, 248, 255));
+    }
+
+    private void setupButtons() {
+        setLayout(null);
+
+        findPathButton = new JButton("Find Shortest Path");
+        findPathButton.setBounds(300, 620, 150, 35);
+        findPathButton.setEnabled(false);
+        findPathButton.addActionListener(e -> findAndDisplayPath());
+        add(findPathButton);
+
+        animateButton = new JButton("▶ Animate");
+        animateButton.setBounds(460, 620, 120, 35);
+        animateButton.setEnabled(false);
+        animateButton.addActionListener(e -> startAnimation());
+        add(animateButton);
+
+        resetButton = new JButton("Reset");
+        resetButton.setBounds(590, 620, 100, 35);
+        resetButton.addActionListener(e -> resetSelection());
+        add(resetButton);
     }
 
     private void setupCities() {
@@ -73,18 +98,13 @@ public class CityTreePanel extends JPanel {
             public void mousePressed(MouseEvent e) {
                 for (City city : cities) {
                     if (city.contains(e.getX(), e.getY())) {
-
-                        // FIX: Mengganti isLeftButton() dengan isLeftMouseButton()
                         if (SwingUtilities.isLeftMouseButton(e)) {
                             draggedCity = city;
                             offsetX = e.getX() - city.getX();
                             offsetY = e.getY() - city.getY();
-
-                            // FIX: Mengganti isRightButton() dengan isRightMouseButton()
                         } else if (SwingUtilities.isRightMouseButton(e)) {
                             handleCitySelection(city);
                         }
-
                         repaint();
                         return;
                     }
@@ -115,27 +135,55 @@ public class CityTreePanel extends JPanel {
             pathStart = city;
             pathEnd = null;
             currentPath = null;
-            JOptionPane.showMessageDialog(this,
-                    "Start city selected: " + city.getName() +
-                            "\nRight-click another city to find the path.");
+            animationController.stopAnimation();
+            findPathButton.setEnabled(false);
+            animateButton.setEnabled(false);
+            repaint();
         } else if (pathEnd == null && city != pathStart) {
             pathEnd = city;
-            currentPath = PathFinder.findPath(pathStart, pathEnd);
-            if (currentPath != null) {
-                JOptionPane.showMessageDialog(this,
-                        "Shortest Path:\n" + currentPath.toString());
-            } else {
-                JOptionPane.showMessageDialog(this,
-                        "No path found between cities!");
-            }
+            findPathButton.setEnabled(true);
+            repaint();
         } else {
-            // Reset selection
             pathStart = city;
             pathEnd = null;
             currentPath = null;
-            JOptionPane.showMessageDialog(this,
-                    "Selection reset. New start city: " + city.getName());
+            animationController.stopAnimation();
+            findPathButton.setEnabled(false);
+            animateButton.setEnabled(false);
+            repaint();
         }
+    }
+
+    private void findAndDisplayPath() {
+        if (pathStart != null && pathEnd != null) {
+            currentPath = PathFinder.findPath(pathStart, pathEnd);
+            if (currentPath != null) {
+                animateButton.setEnabled(true);
+                JOptionPane.showMessageDialog(this,
+                        "Jalur Tercepat Ditemukan!\n\n" + currentPath.toString() +
+                                "\n\nKlik tombol 'Animate' untuk melihat animasi perjalanan.");
+            } else {
+                JOptionPane.showMessageDialog(this,
+                        "Tidak ada jalur yang ditemukan antara kedua kota!");
+            }
+            repaint();
+        }
+    }
+
+    private void startAnimation() {
+        if (currentPath != null) {
+            animationController.startAnimation(currentPath);
+        }
+    }
+
+    private void resetSelection() {
+        pathStart = null;
+        pathEnd = null;
+        currentPath = null;
+        animationController.stopAnimation();
+        findPathButton.setEnabled(false);
+        animateButton.setEnabled(false);
+        repaint();
     }
 
     @Override
@@ -150,7 +198,6 @@ public class CityTreePanel extends JPanel {
         for (City city : cities) {
             for (Connection conn : city.getConnections()) {
                 City dest = conn.getDestination();
-                // Ensure each connection is drawn only once
                 String key = city.getName().compareTo(dest.getName()) < 0 ?
                         city.getName() + "-" + dest.getName() :
                         dest.getName() + "-" + city.getName();
@@ -170,8 +217,43 @@ public class CityTreePanel extends JPanel {
             drawCity(g2d, city, isSelected, isInPath);
         }
 
+        // Draw animated vehicle
+        if (animationController.isAnimating()) {
+            drawVehicle(g2d);
+        }
+
         // Draw instructions
         drawInstructions(g2d);
+
+        // Draw status
+        drawStatus(g2d);
+    }
+
+    private void drawVehicle(Graphics2D g2d) {
+        int x = animationController.getCurrentX();
+        int y = animationController.getCurrentY();
+
+        if (x < 0 || y < 0) return;
+
+        // Draw airplane shadow
+        g2d.setColor(new Color(0, 0, 0, 50));
+        g2d.fillOval(x - 12, y - 8, 24, 16);
+
+        // Draw airplane body
+        g2d.setColor(new Color(255, 69, 0));
+        int[] xPoints = {x, x - 10, x, x + 10};
+        int[] yPoints = {y - 8, y, y + 8, y};
+        g2d.fillPolygon(xPoints, yPoints, 4);
+
+        // Draw airplane wings
+        g2d.setColor(new Color(255, 140, 0));
+        g2d.fillOval(x - 6, y - 6, 12, 12);
+
+        // Draw trail effect
+        for (int i = 1; i <= 3; i++) {
+            g2d.setColor(new Color(255, 140, 0, 100 - i * 30));
+            g2d.fillOval(x - 15 - i * 5, y - 2, 4, 4);
+        }
     }
 
     private void drawConnection(Graphics2D g2d, City c1, City c2,
@@ -231,15 +313,35 @@ public class CityTreePanel extends JPanel {
 
     private void drawInstructions(Graphics2D g2d) {
         g2d.setColor(new Color(0, 0, 0, 180));
-        g2d.fillRoundRect(10, 10, 280, 90, 10, 10);
+        g2d.fillRoundRect(10, 10, 280, 110, 10, 10);
 
         g2d.setColor(Color.WHITE);
         g2d.setFont(new Font("Arial", Font.BOLD, 12));
-        g2d.drawString("Instructions:", 20, 30);
+        g2d.drawString("Instruksi:", 20, 30);
         g2d.setFont(new Font("Arial", Font.PLAIN, 11));
-        g2d.drawString("• Left-click and drag to move cities", 20, 50);
-        g2d.drawString("• Right-click a city to select start", 20, 65);
-        g2d.drawString("• Right-click another to find path", 20, 80);
+        g2d.drawString("• Klik kiri + drag untuk geser kota", 20, 50);
+        g2d.drawString("• Klik kanan untuk pilih kota awal", 20, 65);
+        g2d.drawString("• Klik kanan lagi untuk pilih tujuan", 20, 80);
+        g2d.drawString("• Klik 'Find Shortest Path' untuk cari", 20, 95);
+        g2d.drawString("• Klik 'Animate' untuk animasi", 20, 110);
+    }
+
+    private void drawStatus(Graphics2D g2d) {
+        g2d.setColor(new Color(0, 0, 0, 180));
+        g2d.fillRoundRect(710, 10, 270, 90, 10, 10);
+
+        g2d.setColor(Color.WHITE);
+        g2d.setFont(new Font("Arial", Font.BOLD, 12));
+        g2d.drawString("Status:", 720, 30);
+        g2d.setFont(new Font("Arial", Font.PLAIN, 11));
+
+        String startText = pathStart != null ? pathStart.getName() : "-";
+        String endText = pathEnd != null ? pathEnd.getName() : "-";
+        String distText = currentPath != null ? currentPath.getTotalDistance() + " km" : "-";
+
+        g2d.drawString("Kota Awal: " + startText, 720, 50);
+        g2d.drawString("Kota Tujuan: " + endText, 720, 65);
+        g2d.drawString("Total Jarak: " + distText, 720, 80);
     }
 
     private boolean isInPath(City city) {
@@ -251,7 +353,6 @@ public class CityTreePanel extends JPanel {
         if (currentPath == null) return false;
         List<City> pathCities = currentPath.getCities();
         for (int i = 0; i < pathCities.size() - 1; i++) {
-            // Check segment (c1 -> c2) or (c2 -> c1)
             if ((pathCities.get(i) == c1 && pathCities.get(i + 1) == c2) ||
                     (pathCities.get(i) == c2 && pathCities.get(i + 1) == c1)) {
                 return true;
