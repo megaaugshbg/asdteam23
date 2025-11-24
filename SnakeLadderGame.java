@@ -13,7 +13,7 @@ public class SnakeLadderGame extends JFrame {
         int numPlayers = dialog.getSelectedPlayers();
 
         if (numPlayers > 0) {
-            GamePanel panel = new GamePanel(numPlayers);
+            GamePanel panel = new GamePanel(numPlayers, dialog.getPlayerNames());
             add(panel);
 
             pack();

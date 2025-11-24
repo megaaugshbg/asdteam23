@@ -1,9 +1,12 @@
 // PlayerSelectionDialog.java
 import javax.swing.*;
 import java.awt.*;
+import java.util.ArrayList;
+import java.util.List;
 
 class PlayerSelectionDialog extends JDialog {
     private int selectedPlayers = 0;
+    private List<String> playerNames = new ArrayList<>();
 
     public PlayerSelectionDialog(JFrame parent) {
         super(parent, "Pilih Jumlah Pemain", true);
@@ -26,6 +29,7 @@ class PlayerSelectionDialog extends JDialog {
             button.addActionListener(e -> {
                 selectedPlayers = playerCount;
                 dispose();
+                showNameInputDialog(playerCount);
             });
             mainPanel.add(button);
         }
@@ -33,7 +37,31 @@ class PlayerSelectionDialog extends JDialog {
         add(mainPanel, BorderLayout.CENTER);
     }
 
+    private void showNameInputDialog(int numPlayers) {
+        playerNames.clear();
+
+        for (int i = 1; i <= numPlayers; i++) {
+            String name = JOptionPane.showInputDialog(
+                    this,
+                    "Masukkan nama untuk Player " + i + ":",
+                    "Input Nama Player " + i,
+                    JOptionPane.QUESTION_MESSAGE
+            );
+
+            // Jika user cancel atau tidak isi nama, gunakan default
+            if (name == null || name.trim().isEmpty()) {
+                name = "Player " + i;
+            }
+
+            playerNames.add(name.trim());
+        }
+    }
+
     public int getSelectedPlayers() {
         return selectedPlayers;
+    }
+
+    public List<String> getPlayerNames() {
+        return playerNames;
     }
 }

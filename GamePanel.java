@@ -12,8 +12,8 @@ class GamePanel extends JPanel {
     private int animationStep;
     private static final int ANIMATION_STEPS = 15;
 
-    public GamePanel(int numPlayers) {
-        controller = new GameController(this, numPlayers);
+    public GamePanel(int numPlayers, List<String> playerNames) {
+        controller = new GameController(this, numPlayers, playerNames);
         setPreferredSize(new Dimension(700, 750));
         setBackground(new Color(245, 245, 220));
         setLayout(null);
@@ -192,10 +192,10 @@ class GamePanel extends JPanel {
         g2d.drawString("Giliran: " + currentPlayer.getName(), 70, 35);
 
         g2d.setColor(Color.WHITE);
-        g2d.drawString("Posisi: " + currentPlayer.getPosition(), 250, 35);
+        g2d.drawString("Posisi: " + currentPlayer.getPosition(), 280, 35);
 
         if (controller.isWaitingForChoice() || controller.getLastDiceRoll() > 0) {
-            g2d.drawString("Dadu: " + controller.getLastDiceRoll(), 380, 35);
+            g2d.drawString("Dadu: " + controller.getLastDiceRoll(), 400, 35);
 
             String colorText = controller.getLastColorChoice() == ColorChoice.GREEN ?
                     "HIJAU" : "MERAH";

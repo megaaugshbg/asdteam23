@@ -17,7 +17,7 @@ class GameController {
     private boolean waitingForChoice;
     private Player winner;
 
-    public GameController(GamePanel gamePanel, int numPlayers) {
+    public GameController(GamePanel gamePanel, int numPlayers, List<String> playerNames) {
         this.board = new Board();
         this.players = new ArrayList<>();
         this.dice = new Dice();
@@ -30,10 +30,10 @@ class GameController {
         this.currentPlayerIndex = 0;
         this.winner = null;
 
-        initializePlayers(numPlayers);
+        initializePlayers(numPlayers, playerNames);
     }
 
-    private void initializePlayers(int numPlayers) {
+    private void initializePlayers(int numPlayers, List<String> playerNames) {
         Color[] colors = {
                 new Color(30, 144, 255),   // Blue
                 new Color(220, 20, 60),     // Red
@@ -42,7 +42,10 @@ class GameController {
         };
 
         for (int i = 0; i < numPlayers; i++) {
-            players.add(new Player("Player " + (i + 1), colors[i], i + 1));
+            String name = (playerNames != null && i < playerNames.size())
+                    ? playerNames.get(i)
+                    : "Player " + (i + 1);
+            players.add(new Player(name, colors[i], i + 1));
         }
     }
 
