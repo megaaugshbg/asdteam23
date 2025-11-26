@@ -91,14 +91,21 @@ class GamePanel extends JPanel {
             int x = cell.getX();
             int y = cell.getY();
             int size = cell.getSize();
+            int cellNum = cell.getNumber();
 
             // Alternating colors
-            if ((cell.getNumber() + (cell.getNumber() - 1) / 8) % 2 == 0) {
+            if ((cellNum + (cellNum - 1) / 8) % 2 == 0) {
                 g2d.setColor(new Color(240, 230, 210));
             } else {
                 g2d.setColor(new Color(210, 180, 140));
             }
             g2d.fillRect(x, y, size, size);
+
+            // Highlight kelipatan 5 (bonus cells)
+            if (cellNum % 5 == 0 && cellNum > 0 && cellNum < 64) {
+                g2d.setColor(new Color(135, 206, 250, 100)); // Light blue overlay
+                g2d.fillRect(x, y, size, size);
+            }
 
             // Border
             g2d.setColor(new Color(139, 69, 19));
@@ -108,20 +115,25 @@ class GamePanel extends JPanel {
             // Cell number
             g2d.setColor(Color.BLACK);
             g2d.setFont(new Font("Arial", Font.BOLD, 16));
-            String numStr = String.valueOf(cell.getNumber());
+            String numStr = String.valueOf(cellNum);
             g2d.drawString(numStr, x + 10, y + 20);
 
             // Special cells
-            if (cell.getNumber() == 1) {
+            if (cellNum == 1) {
                 g2d.setColor(new Color(50, 205, 50, 100));
                 g2d.fillRect(x, y, size, size);
                 g2d.setColor(Color.BLACK);
                 g2d.drawString("START", x + 10, y + size - 10);
-            } else if (cell.getNumber() == 64) {
+            } else if (cellNum == 64) {
                 g2d.setColor(new Color(255, 215, 0, 100));
                 g2d.fillRect(x, y, size, size);
                 g2d.setColor(Color.BLACK);
                 g2d.drawString("FINISH", x + 5, y + size - 10);
+            } else if (cellNum % 5 == 0) {
+                // Draw star icon for bonus cells
+                g2d.setColor(new Color(255, 215, 0));
+                g2d.setFont(new Font("Arial", Font.BOLD, 20));
+                g2d.drawString("⭐", x + size - 25, y + size - 5);
             }
         }
     }
@@ -209,7 +221,7 @@ class GamePanel extends JPanel {
         // Instructions
         g2d.setColor(Color.WHITE);
         g2d.setFont(new Font("Arial", Font.PLAIN, 11));
-        g2d.drawString("Hijau (80%): Maju | Merah (20%): Mundur", 70, 55);
+        g2d.drawString("Hijau (80%): Maju | Merah (20%): Mundur | ⭐ Bonus Turn", 70, 55);
     }
 
     private void drawPlayersList(Graphics2D g2d) {
