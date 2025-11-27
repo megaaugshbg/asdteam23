@@ -14,7 +14,6 @@ class GameController {
     private boolean isGameOver;
     private int lastDiceRoll;
     private int lastColorChoice;
-    private boolean waitingForChoice;
     private Player winner;
     private boolean bonusTurn;
 
@@ -25,7 +24,6 @@ class GameController {
         this.colorChoice = new ColorChoice();
         this.gamePanel = gamePanel;
         this.isGameOver = false;
-        this.waitingForChoice = false;
         this.lastDiceRoll = 0;
         this.lastColorChoice = 0;
         this.currentPlayerIndex = 0;
@@ -38,9 +36,9 @@ class GameController {
     private void initializePlayers(int numPlayers, List<String> playerNames) {
         Color[] colors = {
                 new Color(30, 144, 255),   // Blue
-                new Color(220, 20, 60),     // Red
-                new Color(50, 205, 50),     // Green
-                new Color(255, 165, 0)      // Orange
+                new Color(220, 20, 60),    // Red
+                new Color(50, 205, 50),    // Green
+                new Color(255, 165, 0)     // Orange
         };
 
         for (int i = 0; i < numPlayers; i++) {
@@ -51,70 +49,88 @@ class GameController {
         }
     }
 
+    // Helper: Cek apakah angka prima
+    private boolean isPrime(int number) {
+        if (number <= 1) return false;
+        for (int i = 2; i <= Math.sqrt(number); i++) {
+            if (number % i == 0) return false;
+        }
+        return true;
+    }
+
     public void rollDice() {
-        if (isGameOver || getCurrentPlayer().isMoving() || waitingForChoice) return;
+        // Hapus pengecekan waitingForChoice karena sudah tidak ada dialog tunggu
+        if (isGameOver || getCurrentPlayer().isMoving()) return;
 
         lastDiceRoll = dice.roll();
         lastColorChoice = colorChoice.getRandomChoice();
-        waitingForChoice = true;
 
         gamePanel.repaint();
 
-        // Show choice dialog
-        String message = String.format(
-                "%s\n\nDadu: %d\nWarna: %s\n\nApakah Anda ingin bergerak?",
-                getCurrentPlayer().getName(),
-                lastDiceRoll,
-                colorChoice.getColorName(lastColorChoice)
-        );
-
-        int choice = JOptionPane.showConfirmDialog(
-                gamePanel,
-                message,
-                "Giliran " + getCurrentPlayer().getName(),
-                JOptionPane.YES_NO_OPTION
-        );
-
-        if (choice == JOptionPane.YES_OPTION) {
-            executeMove();
-        } else {
-            waitingForChoice = false;
-            bonusTurn = false;
-            nextPlayer();
-            gamePanel.repaint();
-        }
+        // LANGSUNG JALAN TANPA DIALOG KONFIRMASI "GILIRAN ..."
+        executeMove();
     }
 
     private void executeMove() {
         Player currentPlayer = getCurrentPlayer();
         int currentPos = currentPlayer.getPosition();
-        int newPos;
+        int diceVal = lastDiceRoll;
+        int finalPos = currentPos;
 
-        if (lastColorChoice == ColorChoice.GREEN) {
-            newPos = currentPos + lastDiceRoll;
+        // Logika Gerak
+        if (lastColorChoice == ColorChoice.GREEN) { // MAJU
+
+            // LOGIKA SPESIAL: Cek Prima
+            if (isPrime(currentPos)) {
+                boolean ladderFound = false;
+
+                for (int i = 1; i <= diceVal; i++) {
+                    int checkPos = currentPos + i;
+                    Ladder ladder = board.getLadderAt(checkPos);
+
+                    if (ladder != null) {
+                        // KETEMU TANGGA (INTERCEPT)
+                        int stepsUsed = i;
+                        int stepsRemaining = diceVal - stepsUsed;
+
+                        // Posisi langsung lompat ke: Puncak Tangga + Sisa Langkah
+                        finalPos = ladder.getEnd() + stepsRemaining;
+
+                        ladderFound = true;
+                        break;
+                    }
+                }
+
+                if (!ladderFound) {
+                    finalPos = currentPos + diceVal;
+                }
+
+            } else {
+                // Bukan Prima - Jalan Normal
+                finalPos = currentPos + diceVal;
+            }
+
         } else {
-            newPos = currentPos - lastDiceRoll;
+            // MUNDUR (MERAH)
+            finalPos = currentPos - diceVal;
         }
 
-        // Validasi posisi
-        if (newPos < 1) {
-            newPos = 1;
-        } else if (newPos > board.getTotalCells()) {
-            newPos = board.getTotalCells();
-        }
+        // Validasi batas papan
+        if (finalPos < 1) finalPos = 1;
+        if (finalPos > board.getTotalCells()) finalPos = board.getTotalCells();
 
-        currentPlayer.setTargetPosition(newPos);
+        // Set tujuan akhir
+        currentPlayer.setTargetPosition(finalPos);
         currentPlayer.setMoving(true);
-        waitingForChoice = false;
 
-        // Check win condition
-        if (newPos == board.getTotalCells()) {
+        // Cek Win Condition
+        if (finalPos == board.getTotalCells()) {
             isGameOver = true;
             winner = currentPlayer;
         }
 
-        // Check bonus turn (kelipatan 5)
-        if (newPos % 5 == 0 && newPos > 0 && newPos < board.getTotalCells()) {
+        // Cek Bonus Turn (Kelipatan 5 pada posisi akhir)
+        if (finalPos % 5 == 0 && finalPos > 0 && finalPos < board.getTotalCells()) {
             bonusTurn = true;
         } else {
             bonusTurn = false;
@@ -127,51 +143,24 @@ class GameController {
         Player currentPlayer = getCurrentPlayer();
         currentPlayer.setPosition(position);
 
+        // Jika animasi sampai di target
         if (position == currentPlayer.getTargetPosition()) {
             currentPlayer.setMoving(false);
 
-            // Check for ladder
-            Ladder ladder = board.getLadderAt(position);
-            if (ladder != null && !isGameOver) {
-                JOptionPane.showMessageDialog(gamePanel,
-                        "🪜 TANGGA! 🪜\n\n" + currentPlayer.getName() +
-                                " naik tangga dari kotak " + ladder.getStart() +
-                                " ke kotak " + ladder.getEnd() + "!",
-                        "Tangga",
-                        JOptionPane.INFORMATION_MESSAGE);
-
-                // Move to ladder end
-                currentPlayer.setPosition(ladder.getEnd());
-                currentPlayer.setTargetPosition(ladder.getEnd());
-
-                // Check if reached finish via ladder
-                if (ladder.getEnd() == board.getTotalCells()) {
-                    isGameOver = true;
-                    winner = currentPlayer;
-                }
-
-                // Reset bonus turn if ladder moves player
-                bonusTurn = false;
-
-                gamePanel.repaint();
-            }
-
             if (isGameOver && winner != null) {
+                // Hanya pesan Game Over yang tersisa
                 JOptionPane.showMessageDialog(gamePanel,
-                        winner.getName() + " MENANG!\n\nSelamat mencapai kotak 64!",
+                        winner.getName() + " MENANG!",
                         "Game Over",
                         JOptionPane.INFORMATION_MESSAGE);
             } else if (bonusTurn) {
-                // Show bonus turn message
-                JOptionPane.showMessageDialog(gamePanel,
-                        "🎉 BONUS! 🎉\n\n" + currentPlayer.getName() +
-                                " mendarat di kotak " + position + " (kelipatan 5)!\n" +
-                                "Anda mendapat giliran ROLL DICE lagi!",
-                        "Bonus Turn",
-                        JOptionPane.INFORMATION_MESSAGE);
+                // HAPUS PESAN POPUP BONUS
+                // Variable bonusTurn di-reset di sini agar logika tidak error,
+                // tapi kita TIDAK memanggil nextPlayer().
+                // Jadi user bisa langsung klik tombol Roll lagi.
                 bonusTurn = false;
-                // Tidak next player, giliran tetap di player ini
             } else {
+                // Ganti giliran ke pemain berikutnya
                 nextPlayer();
             }
         }
@@ -185,9 +174,7 @@ class GameController {
     }
 
     public void resetGame() {
-        // Generate tangga baru
         board = new Board();
-
         for (Player player : players) {
             player.setPosition(0);
             player.setTargetPosition(0);
@@ -195,7 +182,6 @@ class GameController {
         }
         currentPlayerIndex = 0;
         isGameOver = false;
-        waitingForChoice = false;
         lastDiceRoll = 0;
         lastColorChoice = 0;
         winner = null;
@@ -210,5 +196,6 @@ class GameController {
     public boolean isGameOver() { return isGameOver; }
     public int getLastDiceRoll() { return lastDiceRoll; }
     public int getLastColorChoice() { return lastColorChoice; }
-    public boolean isWaitingForChoice() { return waitingForChoice; }
+    // Hapus method isWaitingForChoice karena sudah tidak dipakai
+    public boolean isWaitingForChoice() { return false; }
 }
