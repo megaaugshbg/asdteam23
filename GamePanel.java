@@ -79,6 +79,7 @@ class GamePanel extends JPanel {
                 RenderingHints.VALUE_ANTIALIAS_ON);
 
         drawBoard(g2d);
+        drawLadders(g2d);
         drawPlayers(g2d);
         drawInfo(g2d);
         drawPlayersList(g2d);
@@ -136,6 +137,82 @@ class GamePanel extends JPanel {
                 g2d.drawString("⭐", x + size - 25, y + size - 5);
             }
         }
+    }
+
+    private void drawLadders(Graphics2D g2d) {
+        Board board = controller.getBoard();
+        List<Ladder> ladders = board.getLadders();
+
+        for (Ladder ladder : ladders) {
+            Cell startCell = board.getCell(ladder.getStart());
+            Cell endCell = board.getCell(ladder.getEnd());
+
+            int x1 = startCell.getCenterX();
+            int y1 = startCell.getCenterY();
+            int x2 = endCell.getCenterX();
+            int y2 = endCell.getCenterY();
+
+            // Draw ladder line (two parallel lines for side rails)
+            g2d.setColor(new Color(139, 69, 19));
+            g2d.setStroke(new BasicStroke(4));
+
+            // Calculate perpendicular offset for parallel lines
+            double angle = Math.atan2(y2 - y1, x2 - x1);
+            int offsetDist = 6;
+            int offsetX = (int)(Math.sin(angle) * offsetDist);
+            int offsetY = (int)(-Math.cos(angle) * offsetDist);
+
+            // Draw two side rails
+            g2d.drawLine(x1 - offsetX, y1 - offsetY, x2 - offsetX, y2 - offsetY);
+            g2d.drawLine(x1 + offsetX, y1 + offsetY, x2 + offsetX, y2 + offsetY);
+
+            // Draw ladder rungs
+            g2d.setStroke(new BasicStroke(3));
+            int numRungs = 5;
+            for (int i = 1; i <= numRungs; i++) {
+                int rx = x1 + (x2 - x1) * i / (numRungs + 1);
+                int ry = y1 + (y2 - y1) * i / (numRungs + 1);
+
+                g2d.drawLine(rx - offsetX, ry - offsetY, rx + offsetX, ry + offsetY);
+            }
+
+            // Draw arrow at end
+            g2d.setColor(new Color(34, 139, 34));
+            g2d.setStroke(new BasicStroke(3));
+            drawArrow(g2d, x1, y1, x2, y2);
+
+            // Draw ladder emoji
+            g2d.setColor(new Color(139, 69, 19));
+            g2d.setFont(new Font("Arial", Font.BOLD, 16));
+            int midX = (x1 + x2) / 2;
+            int midY = (y1 + y2) / 2;
+
+            // Draw white background for emoji
+            g2d.setColor(new Color(255, 255, 255, 200));
+            g2d.fillOval(midX - 12, midY - 12, 24, 24);
+
+            g2d.setColor(new Color(139, 69, 19));
+            g2d.drawString("🪜", midX - 8, midY + 6);
+        }
+    }
+
+    private void drawArrow(Graphics2D g2d, int x1, int y1, int x2, int y2) {
+        double angle = Math.atan2(y2 - y1, x2 - x1);
+        int arrowSize = 15;
+
+        int[] xPoints = new int[3];
+        int[] yPoints = new int[3];
+
+        xPoints[0] = x2;
+        yPoints[0] = y2;
+
+        xPoints[1] = (int)(x2 - arrowSize * Math.cos(angle - Math.PI / 6));
+        yPoints[1] = (int)(y2 - arrowSize * Math.sin(angle - Math.PI / 6));
+
+        xPoints[2] = (int)(x2 - arrowSize * Math.cos(angle + Math.PI / 6));
+        yPoints[2] = (int)(y2 - arrowSize * Math.sin(angle + Math.PI / 6));
+
+        g2d.fillPolygon(xPoints, yPoints, 3);
     }
 
     private void drawPlayers(Graphics2D g2d) {
@@ -221,7 +298,7 @@ class GamePanel extends JPanel {
         // Instructions
         g2d.setColor(Color.WHITE);
         g2d.setFont(new Font("Arial", Font.PLAIN, 11));
-        g2d.drawString("Hijau (80%): Maju | Merah (20%): Mundur | ⭐ Bonus Turn", 70, 55);
+        g2d.drawString("Hijau (80%): Maju | Merah (20%): Mundur | ⭐ Bonus | 🪜 Tangga", 70, 55);
     }
 
     private void drawPlayersList(Graphics2D g2d) {

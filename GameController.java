@@ -16,6 +16,7 @@ class GameController {
     private int lastColorChoice;
     private boolean waitingForChoice;
     private Player winner;
+    private boolean bonusTurn;
 
     public GameController(GamePanel gamePanel, int numPlayers, List<String> playerNames) {
         this.board = new Board();
@@ -29,6 +30,7 @@ class GameController {
         this.lastColorChoice = 0;
         this.currentPlayerIndex = 0;
         this.winner = null;
+        this.bonusTurn = false;
 
         initializePlayers(numPlayers, playerNames);
     }
@@ -77,6 +79,7 @@ class GameController {
             executeMove();
         } else {
             waitingForChoice = false;
+            bonusTurn = false;
             nextPlayer();
             gamePanel.repaint();
         }
@@ -110,6 +113,13 @@ class GameController {
             winner = currentPlayer;
         }
 
+        // Check bonus turn (kelipatan 5)
+        if (newPos % 5 == 0 && newPos > 0 && newPos < board.getTotalCells()) {
+            bonusTurn = true;
+        } else {
+            bonusTurn = false;
+        }
+
         gamePanel.startAnimation();
     }
 
@@ -120,11 +130,47 @@ class GameController {
         if (position == currentPlayer.getTargetPosition()) {
             currentPlayer.setMoving(false);
 
+            // Check for ladder
+            Ladder ladder = board.getLadderAt(position);
+            if (ladder != null && !isGameOver) {
+                JOptionPane.showMessageDialog(gamePanel,
+                        "🪜 TANGGA! 🪜\n\n" + currentPlayer.getName() +
+                                " naik tangga dari kotak " + ladder.getStart() +
+                                " ke kotak " + ladder.getEnd() + "!",
+                        "Tangga",
+                        JOptionPane.INFORMATION_MESSAGE);
+
+                // Move to ladder end
+                currentPlayer.setPosition(ladder.getEnd());
+                currentPlayer.setTargetPosition(ladder.getEnd());
+
+                // Check if reached finish via ladder
+                if (ladder.getEnd() == board.getTotalCells()) {
+                    isGameOver = true;
+                    winner = currentPlayer;
+                }
+
+                // Reset bonus turn if ladder moves player
+                bonusTurn = false;
+
+                gamePanel.repaint();
+            }
+
             if (isGameOver && winner != null) {
                 JOptionPane.showMessageDialog(gamePanel,
                         winner.getName() + " MENANG!\n\nSelamat mencapai kotak 64!",
                         "Game Over",
                         JOptionPane.INFORMATION_MESSAGE);
+            } else if (bonusTurn) {
+                // Show bonus turn message
+                JOptionPane.showMessageDialog(gamePanel,
+                        "🎉 BONUS! 🎉\n\n" + currentPlayer.getName() +
+                                " mendarat di kotak " + position + " (kelipatan 5)!\n" +
+                                "Anda mendapat giliran ROLL DICE lagi!",
+                        "Bonus Turn",
+                        JOptionPane.INFORMATION_MESSAGE);
+                bonusTurn = false;
+                // Tidak next player, giliran tetap di player ini
             } else {
                 nextPlayer();
             }
@@ -139,6 +185,9 @@ class GameController {
     }
 
     public void resetGame() {
+        // Generate tangga baru
+        board = new Board();
+
         for (Player player : players) {
             player.setPosition(0);
             player.setTargetPosition(0);
@@ -150,6 +199,7 @@ class GameController {
         lastDiceRoll = 0;
         lastColorChoice = 0;
         winner = null;
+        bonusTurn = false;
         gamePanel.repaint();
     }
 
