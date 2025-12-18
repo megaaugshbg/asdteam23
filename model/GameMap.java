@@ -1,10 +1,6 @@
 package model;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 
 public class GameMap {
     public List<Node> nodes;
@@ -15,7 +11,7 @@ public class GameMap {
         nodes = new ArrayList<>();
         shortcuts = new HashMap<>();
 
-        // --- KOORDINAT NODE (TETAP) ---
+        // --- KOORDINAT NODE (JANGAN UBAH) ---
         nodes.add(new Node(1, 100, 534)); nodes.add(new Node(2, 142, 525));
         nodes.add(new Node(3, 166, 497)); nodes.add(new Node(4, 162, 455));
         nodes.add(new Node(5, 158, 414)); nodes.add(new Node(6, 155, 366));
@@ -50,62 +46,51 @@ public class GameMap {
         nodes.add(new Node(63, 538, 104)); nodes.add(new Node(64, 595, 106));
 
         finishNode = getNodeById(64);
+
+        // SHORTCUT
+        shortcuts.put(8, 13);
+        shortcuts.put(18, 24);
+        shortcuts.put(30, 36);
+        shortcuts.put(46, 52);
+        shortcuts.put(55, 62);
+
         initializeNeighbors();
-
-        // 1. GENERATE SHORTCUT RANDOM
-        // Pastikan Anda melihat Console untuk tahu di mana shortcut-nya!
-        generateRandomShortcuts(6);
-
-        // 2. GENERATE KOIN RANDOM (30 Poin)
         setupSpecialNodes();
-    }
-
-    private void generateRandomShortcuts(int count) {
-        shortcuts.clear();
-        Random rand = new Random();
-        int generated = 0;
-
-        System.out.println("================ MAP INFO ================");
-        while (generated < count) {
-            // Start antara 2 sampai 50
-            int start = rand.nextInt(49) + 2;
-            // Jarak lompatan 5 sampai 20
-            int jump = rand.nextInt(16) + 5;
-            int end = start + jump;
-
-            if (end < 64 && !shortcuts.containsKey(start)) {
-                shortcuts.put(start, end);
-                generated++;
-                // INI CONTEKAN POSISI SHORTCUT ANDA:
-                System.out.println(">>> SHORTCUT CREATED: Node " + start + " ---> Node " + end);
-            }
-        }
-        System.out.println("==========================================");
     }
 
     public Node getNodeById(int id) {
         return nodes.stream().filter(n -> n.id == id).findFirst().orElse(null);
     }
 
+    // ==========================
+    // GRAPH BUILDER (DIJKSTRA)
+    // ==========================
     private void initializeNeighbors() {
+        // Jalur normal
         for (int i = 0; i < nodes.size() - 1; i++) {
             nodes.get(i).addNeighbor(nodes.get(i + 1));
+        }
+
+        // Shortcut sebagai EDGE GRAPH
+        for (Map.Entry<Integer, Integer> sc : shortcuts.entrySet()) {
+            Node from = getNodeById(sc.getKey());
+            Node to = getNodeById(sc.getValue());
+            if (from != null && to != null) {
+                from.addNeighbor(to);
+            }
         }
     }
 
     private void setupSpecialNodes() {
         Random rand = new Random();
-        int coinsPlaced = 0;
-        while (coinsPlaced < 30) {
-            int randId = rand.nextInt(62) + 2;
-            Node n = getNodeById(randId);
-
-            // Hindari menaruh koin di Star Node (Kelipatan 5)
+        int coins = 0;
+        while (coins < 30) {
+            int id = rand.nextInt(62) + 2;
+            Node n = getNodeById(id);
             if (n != null && !n.hasScore && !n.isStar) {
                 n.hasScore = true;
-                coinsPlaced++;
+                coins++;
             }
         }
-        System.out.println(">>> 30 Coins (+100) placed randomly.");
     }
 }

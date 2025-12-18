@@ -58,7 +58,7 @@ public class Node {
         // Icon Bintang
         if (isStar) {
             g.setColor(Color.YELLOW);
-            g.drawString("⭐", x - 8, y + 28);
+            g.drawString("", x - 8, y + 28);
         }
 
         // Icon Poin

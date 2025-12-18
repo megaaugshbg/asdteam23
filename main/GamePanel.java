@@ -30,7 +30,7 @@ public class GamePanel extends JPanel {
     private Timer movementTimer;
     private List<Node> currentPathQueue;
     private int pathIndex = 0;
-    private static final int ANIMATION_SPEED = 10;
+    private static final int ANIMATION_SPEED = 12;
     private static final double MOVE_SPEED = 5.0;
 
     public GamePanel(GameFrame frame, int numPlayers) {
@@ -43,6 +43,7 @@ public class GamePanel extends JPanel {
         mapImage = (imgUrl != null) ? new ImageIcon(imgUrl).getImage() : null;
 
         players = initializePlayers(numPlayers);
+
         Node start = gameMap.getNodeById(1);
         for(Player p : players) p.setVisualPosition(start.x, start.y);
 
@@ -53,7 +54,9 @@ public class GamePanel extends JPanel {
     private List<Player> initializePlayers(int count) {
         List<Player> list = new ArrayList<>();
         Color[] cols = { new Color(30, 144, 255), new Color(220, 20, 60), new Color(50, 205, 50), new Color(255, 140, 0) };
-        for (int i = 0; i < count; i++) list.add(new Player("Player " + (i + 1), cols[i % cols.length]));
+        for (int i = 0; i < count; i++) {
+            list.add(new Player("Player " + (i + 1), cols[i % cols.length]));
+        }
         return list;
     }
 
@@ -61,7 +64,7 @@ public class GamePanel extends JPanel {
         Dimension sc = Toolkit.getDefaultToolkit().getScreenSize();
         int uiWidth = 260; int uiX = sc.width - uiWidth - 20;
 
-        backBtn = new JButton("🏠 Quit Game"); backBtn.setBounds(30, 30, 150, 45);
+        backBtn = new JButton("Quit Game"); backBtn.setBounds(30, 30, 150, 45);
         backBtn.setFont(new Font("Arial", Font.BOLD, 14)); backBtn.setBackground(new Color(244, 67, 54));
         backBtn.setForeground(Color.WHITE); backBtn.addActionListener(e -> frame.showDashboard()); add(backBtn);
 
@@ -70,13 +73,13 @@ public class GamePanel extends JPanel {
         statusLabel = new JLabel("Turn: Player 1"); statusLabel.setForeground(Color.WHITE);
         statusLabel.setFont(new Font("Arial", Font.BOLD, 18)); statusPanel.add(statusLabel); add(statusPanel);
 
-        JLabel scoreTitle = new JLabel("📊 SCOREBOARD"); scoreTitle.setBounds(uiX, 120, uiWidth, 20);
+        JLabel scoreTitle = new JLabel("SCOREBOARD"); scoreTitle.setBounds(uiX, 120, uiWidth, 20);
         scoreTitle.setFont(new Font("Arial", Font.BOLD, 14)); scoreTitle.setHorizontalAlignment(SwingConstants.CENTER); add(scoreTitle);
         scoreArea = new JTextArea(); scoreArea.setBounds(uiX, 145, uiWidth, 140);
         scoreArea.setEditable(false); scoreArea.setFont(new Font("Monospaced", Font.BOLD, 13));
         scoreArea.setBackground(new Color(240, 248, 255)); scoreArea.setBorder(BorderFactory.createLineBorder(Color.GRAY, 1)); add(scoreArea);
 
-        rollDiceBtn = new JButton("🎲 ROLL DICE"); rollDiceBtn.setBounds(uiX, 300, uiWidth, 60);
+        rollDiceBtn = new JButton("ROLL DICE"); rollDiceBtn.setBounds(uiX, 300, uiWidth, 60);
         rollDiceBtn.setBackground(new Color(255, 193, 7)); rollDiceBtn.setForeground(Color.BLACK);
         rollDiceBtn.setFont(new Font("Arial", Font.BOLD, 18)); rollDiceBtn.addActionListener(e -> rollDiceAction()); add(rollDiceBtn);
 
@@ -93,7 +96,7 @@ public class GamePanel extends JPanel {
         StringBuilder sb = new StringBuilder();
         for (Player pl : players) {
             sb.append(" ").append(String.format("%-8s", pl.name)).append("| ").append(pl.score).append(" pts");
-            if(pl.shortestPathActive) sb.append(" [Prime]");
+//            if(pl.shortestPathActive) sb.append(" [Prime]");
             sb.append("\n");
         }
         scoreArea.setText(sb.toString()); repaint();
@@ -108,10 +111,10 @@ public class GamePanel extends JPanel {
         String msg; List<Node> path;
 
         if (isGreen) {
-            msg = "🎲 Rolled " + steps + " (GREEN)\n✅ Move FORWARD!";
+            msg = "🎲Rolled " + steps + " (GREEN)\n Move FORWARD!";
             path = calculateForwardPath(p, steps);
         } else {
-            msg = "🎲 Rolled " + steps + " (RED)\n🔻 Move BACKWARD!";
+            msg = " Rolled " + steps + " (RED)\n Move BACKWARD!";
             path = calculateBackwardPath(p, steps);
         }
 
@@ -120,62 +123,66 @@ public class GamePanel extends JPanel {
         startAnimation(p, path);
     }
 
-    // --- LOGIKA UTAMA PERGERAKAN & SHORTCUT ---
+    // --- LOGIKA UTAMA: PERGERAKAN & SHORTCUT ---
     private List<Node> calculateForwardPath(Player p, int steps) {
         List<Node> path = new ArrayList<>();
         Node current = gameMap.getNodeById(p.currentNode);
 
-        // Cek Start Prima
+        // 1. CEK APAKAH START TURN INI DARI ANGKA PRIMA?
         boolean startIsPrime = PrimeChecker.isPrime(p.currentNode);
-        System.out.println("\n--- TURN: " + p.name + " (Start: " + p.currentNode + ", Prime: " + startIsPrime + ") ---");
 
-        if (p.shortestPathActive) {
-            List<Node> sp = PathFinder.dijkstra(current, gameMap.finishNode);
-            if (!sp.isEmpty() && sp.get(0).id == current.id) sp.remove(0);
-            for(int i=0; i<steps && i<sp.size(); i++) path.add(sp.get(i));
-            p.shortestPathActive = false;
-            return path;
-        }
+        System.out.println("==========================================");
+        System.out.println("TURN START: " + p.name + " at Node " + p.currentNode);
+        System.out.println("Start is Prime? " + startIsPrime);
+        System.out.println("Dice Steps: " + steps);
+
+        // --- PENTING: KITA MATIKAN DIJKSTRA AGAR LOGIKA SHORTCUT JALAN ---
+        // Jika kode ini aktif, dia akan bypass logika shortcut manual kita.
+        // if (p.shortestPathActive) { ... }  <-- SAYA HAPUS/COMMENT BLOK INI
 
         int stepsRemaining = steps;
         Node tracker = current;
 
         while (stepsRemaining > 0) {
             Node next = null;
-            // Cari node tetangga (urutan ID naik)
+            // Cari node di depan (ID + 1)
             for(Node n : tracker.neighbors) {
                 if(n.id == tracker.id + 1) { next = n; break; }
             }
             if (next == null) break;
 
-            // --- DETEKSI SHORTCUT ---
-            if (gameMap.shortcuts.containsKey(next.id)) {
-                // Ada shortcut di depan (misal node 8)
-                System.out.println("  ! Shortcut found at Node " + next.id + " -> " + gameMap.shortcuts.get(next.id));
+            // 2. CEK SHORTCUT DI DEPAN
+            // Apakah node 'next' adalah pintu shortcut?
+            boolean isShortcutEntrance = gameMap.shortcuts.containsKey(next.id);
+
+            if (isShortcutEntrance) {
+                System.out.println("  ! Shortcut detected at Node " + next.id);
 
                 if (startIsPrime) {
-                    // SYARAT TERPENUHI
-                    // 1. Masuk ke mulut shortcut (misal 8)
-                    path.add(next);
-                    stepsRemaining--; // Kurangi langkah (masuk ke mulut bayar 1 langkah)
+                    // SYARAT TERPENUHI (Start Prima + Ada Shortcut)
 
-                    // 2. Teleport ke Exit
+                    // A. Masuk ke mulut shortcut (misal 8)
+                    path.add(next);
+                    stepsRemaining--; // Langkah berkurang 1
+
+                    // B. Teleport ke Exit (misal 13)
                     int exitId = gameMap.shortcuts.get(next.id);
                     Node exitNode = gameMap.getNodeById(exitId);
 
                     if (exitNode != null) {
-                        path.add(exitNode); // Tambahkan node exit ke path agar animasi lompat
-                        tracker = exitNode; // Tracker logika pindah ke exit
-                        System.out.println("  >>> TAKING SHORTCUT! Teleport to " + exitId + ". Remaining Steps: " + stepsRemaining);
+                        path.add(exitNode);
+                        tracker = exitNode; // Tracker logika pindah ke 13
+                        System.out.println("  >>> JUMPING 8->13! Steps left: " + stepsRemaining);
                     }
                 } else {
-                    // TIDAK MEMENUHI SYARAT (Bukan start prima)
+                    // Start BUKAN Prima, jadi lewat biasa saja
+                    System.out.println("  x Shortcut ignored (Not started at Prime)");
                     path.add(next);
                     tracker = next;
                     stepsRemaining--;
                 }
             } else {
-                // JALAN BIASA
+                // Jalan Biasa
                 path.add(next);
                 tracker = next;
                 stepsRemaining--;
@@ -203,14 +210,29 @@ public class GamePanel extends JPanel {
             if (pathIndex >= currentPathQueue.size()) {
                 ((Timer)e.getSource()).stop(); finishAnimation(p); return;
             }
-            Node target = currentPathQueue.get(pathIndex);
-            double dx = target.x - p.visualX; double dy = target.y - p.visualY;
-            double dist = Math.sqrt(dx*dx + dy*dy);
 
-            if (dist <= MOVE_SPEED) {
-                p.visualX = target.x; p.visualY = target.y; p.currentNode = target.id; pathIndex++;
-            } else {
-                p.visualX += (dx / dist) * MOVE_SPEED; p.visualY += (dy / dist) * MOVE_SPEED;
+            Node target = currentPathQueue.get(pathIndex);
+
+            // --- DETEKSI TELEPORT VISUAL ---
+            // Jika node target jaraknya jauh (> 1) dari node saat ini,
+            // berarti itu hasil dari shortcut. Langsung Teleport!
+            if (Math.abs(target.id - p.currentNode) > 1) {
+                p.visualX = target.x;
+                p.visualY = target.y;
+                p.currentNode = target.id;
+                pathIndex++;
+                System.out.println("Visual Teleport executed.");
+            }
+            else {
+                // Jalan Biasa (Interpolasi)
+                double dx = target.x - p.visualX; double dy = target.y - p.visualY;
+                double dist = Math.sqrt(dx*dx + dy*dy);
+
+                if (dist <= MOVE_SPEED) {
+                    p.visualX = target.x; p.visualY = target.y; p.currentNode = target.id; pathIndex++;
+                } else {
+                    p.visualX += (dx / dist) * MOVE_SPEED; p.visualY += (dy / dist) * MOVE_SPEED;
+                }
             }
             repaint();
         });
@@ -251,6 +273,8 @@ public class GamePanel extends JPanel {
 
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         g2d.setStroke(new BasicStroke(3));
+
+        // GAMBAR GARIS PENGHUBUNG & SHORTCUT
         for (Node n : gameMap.nodes) {
             for (Node nb : n.neighbors) {
                 if (n.id < nb.id && Math.abs(n.id - nb.id) == 1) {
@@ -264,7 +288,9 @@ public class GamePanel extends JPanel {
                 g2d.drawLine(n.x, n.y, target.x, target.y);
             }
         }
+
         for(Node n : gameMap.nodes) n.draw(g2d);
+
         for(int i=0; i<players.size(); i++) {
             Player p = players.get(i);
             int px = (int) p.visualX + ((players.size() > 1 && i%2!=0) ? 10 : -10);
