@@ -2,23 +2,22 @@ package main;
 
 import javax.swing.*;
 import java.awt.*;
+import maze.MazeGame;
 
 public class GameFrame extends JFrame {
 
     private final CardLayout cardLayout;
     private final JPanel mainPanel;
     private GamePanel gamePanel;
+    private MazeGame mazeGame;
 
     public GameFrame() {
         setTitle("Map Board Game");
 
         // --- SETTING FULLSCREEN ---
-        setUndecorated(true); // Hilangkan bingkai window (close, minimize, title bar)
-        setExtendedState(JFrame.MAXIMIZED_BOTH); // Set ukuran maksimal layar
+        setUndecorated(true);
+        setExtendedState(JFrame.MAXIMIZED_BOTH);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
-
-        // Opsional: Icon taskbar (jika punya logo)
-        // setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource("/Asset/icon.png")));
 
         cardLayout = new CardLayout();
         mainPanel = new JPanel(cardLayout);
@@ -29,9 +28,7 @@ public class GameFrame extends JFrame {
 
         add(mainPanel);
 
-        // Tampilkan Dashboard awal
         showDashboard();
-
         setVisible(true);
     }
 
@@ -48,13 +45,20 @@ public class GameFrame extends JFrame {
         if (gamePanel != null) {
             mainPanel.remove(gamePanel);
         }
-        // Buat instance GamePanel baru
         gamePanel = new GamePanel(this, numPlayers);
         mainPanel.add(gamePanel, "GAME");
-
         cardLayout.show(mainPanel, "GAME");
-
-        // Fokuskan ke panel game agar responsif
         gamePanel.requestFocusInWindow();
+    }
+
+    // ===== MAZE GAME METHOD =====
+    public void showMazeGame() {
+        if (mazeGame != null) {
+            mainPanel.remove(mazeGame);
+        }
+        mazeGame = new MazeGame(this);
+        mainPanel.add(mazeGame, "MAZE");
+        cardLayout.show(mainPanel, "MAZE");
+        mazeGame.requestFocusInWindow();
     }
 }

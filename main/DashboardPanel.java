@@ -9,7 +9,6 @@ public class DashboardPanel extends JPanel {
         setLayout(null);
         setBackground(Color.WHITE);
 
-        // Ambil ukuran layar pengguna untuk penempatan posisi tengah
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         int screenWidth = screenSize.width;
         int screenHeight = screenSize.height;
@@ -18,29 +17,39 @@ public class DashboardPanel extends JPanel {
         int centerY = screenHeight / 2;
 
         // Judul
-        JLabel title = new JLabel("Map Board Game");
+        JLabel title = new JLabel("Game Collection");
         title.setFont(new Font("Arial", Font.BOLD, 48));
-        // Posisikan judul di tengah (dikurangi setengah lebar label estimasi)
-        title.setBounds(centerX - 250, centerY - 200, 500, 60);
+        title.setBounds(centerX - 250, centerY - 250, 500, 60);
         title.setHorizontalAlignment(SwingConstants.CENTER);
         add(title);
 
         // Ukuran Tombol
         int btnWidth = 250;
         int btnHeight = 55;
-        int startY = centerY - 50;
+        int startY = centerY - 120;
         int gap = 70;
 
-        // Play Button
-        JButton playBtn = new JButton("Play");
-        playBtn.setBounds(centerX - (btnWidth / 2), startY, btnWidth, btnHeight);
-        playBtn.setFont(new Font("Arial", Font.BOLD, 20));
-        playBtn.addActionListener(e -> frame.showModeSelection());
-        add(playBtn);
+        // Board Game Button
+        JButton boardGameBtn = new JButton(" Board Game");
+        boardGameBtn.setBounds(centerX - (btnWidth / 2), startY, btnWidth, btnHeight);
+        boardGameBtn.setFont(new Font("Arial", Font.BOLD, 20));
+        boardGameBtn.setBackground(new Color(100, 149, 237));
+        boardGameBtn.setForeground(Color.WHITE);
+        boardGameBtn.addActionListener(e -> frame.showModeSelection());
+        add(boardGameBtn);
+
+        // Maze Game Button (NEW!)
+        JButton mazeBtn = new JButton(" Maze Solver");
+        mazeBtn.setBounds(centerX - (btnWidth / 2), startY + gap, btnWidth, btnHeight);
+        mazeBtn.setFont(new Font("Arial", Font.BOLD, 20));
+        mazeBtn.setBackground(new Color(76, 175, 80));
+        mazeBtn.setForeground(Color.WHITE);
+        mazeBtn.addActionListener(e -> frame.showMazeGame());
+        add(mazeBtn);
 
         // Leaderboard Button
         JButton leaderboardBtn = new JButton("Leaderboard");
-        leaderboardBtn.setBounds(centerX - (btnWidth / 2), startY + gap, btnWidth, btnHeight);
+        leaderboardBtn.setBounds(centerX - (btnWidth / 2), startY + (gap * 2), btnWidth, btnHeight);
         leaderboardBtn.setFont(new Font("Arial", Font.PLAIN, 16));
         leaderboardBtn.addActionListener(e ->
                 JOptionPane.showMessageDialog(this, "Leaderboard (Coming Soon)")
@@ -49,7 +58,7 @@ public class DashboardPanel extends JPanel {
 
         // Settings Button
         JButton settingsBtn = new JButton("Settings");
-        settingsBtn.setBounds(centerX - (btnWidth / 2), startY + (gap * 2), btnWidth, btnHeight);
+        settingsBtn.setBounds(centerX - (btnWidth / 2), startY + (gap * 3), btnWidth, btnHeight);
         settingsBtn.setFont(new Font("Arial", Font.PLAIN, 16));
         settingsBtn.addActionListener(e ->
                 JOptionPane.showMessageDialog(this, "Settings (Coming Soon)")
@@ -58,7 +67,7 @@ public class DashboardPanel extends JPanel {
 
         // Exit Button
         JButton exitBtn = new JButton("Exit Game");
-        exitBtn.setBounds(centerX - (btnWidth / 2), startY + (gap * 3), btnWidth, btnHeight);
+        exitBtn.setBounds(centerX - (btnWidth / 2), startY + (gap * 4), btnWidth, btnHeight);
         exitBtn.setFont(new Font("Arial", Font.BOLD, 16));
         exitBtn.setBackground(new Color(255, 100, 100));
         exitBtn.setForeground(Color.WHITE);

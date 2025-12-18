@@ -1,6 +1,10 @@
 package model;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
 
 public class GameMap {
     public List<Node> nodes;
@@ -46,15 +50,22 @@ public class GameMap {
         nodes.add(new Node(63, 538, 104)); nodes.add(new Node(64, 595, 106));
 
         finishNode = getNodeById(64);
+        initializeNeighbors();
 
-        // SHORTCUT
+        // ------------------------------------------
+        // SHORTCUT PASTI (HARDCODED)
+        // ------------------------------------------
+        shortcuts.clear();
+
         shortcuts.put(8, 13);
         shortcuts.put(18, 24);
         shortcuts.put(30, 36);
         shortcuts.put(46, 52);
         shortcuts.put(55, 62);
 
-        initializeNeighbors();
+        System.out.println(">>> FIXED SHORTCUTS LOADED: " + shortcuts);
+
+        // KOIN RANDOM
         setupSpecialNodes();
     }
 
@@ -62,34 +73,22 @@ public class GameMap {
         return nodes.stream().filter(n -> n.id == id).findFirst().orElse(null);
     }
 
-    // ==========================
-    // GRAPH BUILDER (DIJKSTRA)
-    // ==========================
     private void initializeNeighbors() {
-        // Jalur normal
         for (int i = 0; i < nodes.size() - 1; i++) {
             nodes.get(i).addNeighbor(nodes.get(i + 1));
-        }
-
-        // Shortcut sebagai EDGE GRAPH
-        for (Map.Entry<Integer, Integer> sc : shortcuts.entrySet()) {
-            Node from = getNodeById(sc.getKey());
-            Node to = getNodeById(sc.getValue());
-            if (from != null && to != null) {
-                from.addNeighbor(to);
-            }
         }
     }
 
     private void setupSpecialNodes() {
         Random rand = new Random();
-        int coins = 0;
-        while (coins < 30) {
-            int id = rand.nextInt(62) + 2;
-            Node n = getNodeById(id);
+        int coinsPlaced = 0;
+
+        while (coinsPlaced < 30) {
+            int randId = rand.nextInt(62) + 2;
+            Node n = getNodeById(randId);
             if (n != null && !n.hasScore && !n.isStar) {
                 n.hasScore = true;
-                coins++;
+                coinsPlaced++;
             }
         }
     }
