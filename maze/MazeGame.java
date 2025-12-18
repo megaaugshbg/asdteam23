@@ -34,7 +34,10 @@ public class MazeGame extends JPanel {
     public MazeGame(main.GameFrame frame) {
         this.frame = frame;
         setLayout(null);
-        setBackground(new Color(240, 240, 240));
+
+        // --- WARNA BACKGROUND COKELAT MINECRAFT ---
+        setBackground(new Color(116, 82, 55));
+        // ------------------------------------------
 
         generator = new MazeGenerator();
         solver = new MazeSolver();
@@ -45,34 +48,46 @@ public class MazeGame extends JPanel {
 
     private void setupUI() {
         Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
-        int uiX = screen.width - 280;
+        int screenW = screen.width;
+        int screenH = screen.height;
 
+        // --- KONFIGURASI TOMBOL HORIZONTAL DI BAWAH ---
+        int bw = 140; // Lebar tombol
+        int bh = 40;  // Tinggi tombol
+        int gap = 15; // Jarak antar tombol
+        int totalElements = 6;
+
+        int totalWidth = (bw * totalElements) + (gap * (totalElements - 1));
+        int startX = (screenW - totalWidth) / 2;
+        int bottomY = screenH - 140;
+
+        // Tombol Back
         btnBack = new JButton("← Back");
         btnBack.setBounds(20, 20, 120, 40);
         btnBack.setFont(new Font("Arial", Font.BOLD, 14));
-        btnBack.setBackground(new Color(244, 67, 54));
+        btnBack.setBackground(new Color(244, 67, 67));
         btnBack.setForeground(Color.WHITE);
         btnBack.addActionListener(e -> frame.showDashboard());
         add(btnBack);
 
+        // Judul
         JLabel title = new JLabel("MAZE SOLVER");
-        title.setBounds(uiX, 30, 250, 30);
-        title.setFont(new Font("Arial", Font.BOLD, 20));
+        title.setBounds((screenW - 400) / 2, 20, 400, 40);
+        title.setFont(new Font("Arial", Font.BOLD, 28));
+        title.setForeground(Color.WHITE);
         title.setHorizontalAlignment(SwingConstants.CENTER);
         add(title);
 
-        JLabel lblSize = new JLabel("Maze Size:");
-        lblSize.setBounds(uiX, 80, 100, 25);
-        add(lblSize);
-
+        // Combo Box Size
         sizeCombo = new JComboBox<>(new String[]{"15x15", "20x20", "25x25", "30x30"});
         sizeCombo.setSelectedIndex(2);
-        sizeCombo.setBounds(uiX + 100, 80, 150, 25);
+        sizeCombo.setBounds(startX, bottomY, bw, bh);
         add(sizeCombo);
 
-        btnGenerate = new JButton("🔄 Generate New Maze");
-        btnGenerate.setBounds(uiX, 120, 250, 45);
-        btnGenerate.setFont(new Font("Arial", Font.BOLD, 14));
+        // Tombol Generate
+        btnGenerate = new JButton("New Maze");
+        btnGenerate.setBounds(startX + (bw + gap), bottomY, bw, bh);
+        btnGenerate.setFont(new Font("Arial", Font.BOLD, 13));
         btnGenerate.setBackground(new Color(76, 175, 80));
         btnGenerate.setForeground(Color.WHITE);
         btnGenerate.addActionListener(e -> {
@@ -84,30 +99,32 @@ public class MazeGame extends JPanel {
         });
         add(btnGenerate);
 
-        btnBFS = createAlgoButton("BFS (Unweighted)", uiX, 200, "BFS");
-        btnDFS = createAlgoButton("DFS (Unweighted)", uiX, 260, "DFS");
-        btnDijkstra = createAlgoButton("Dijkstra (Weighted)", uiX, 320, "DIJKSTRA");
-        btnAStar = createAlgoButton("A* (Weighted)", uiX, 380, "ASTAR");
-
+        // Tombol Algoritma
+        btnBFS = createAlgoButton("BFS", startX + (bw + gap) * 2, bottomY, "BFS");
+        btnDFS = createAlgoButton("DFS", startX + (bw + gap) * 3, bottomY, "DFS");
+        btnDijkstra = createAlgoButton("Dijkstra", startX + (bw + gap) * 4, bottomY, "DIJKSTRA");
+        btnAStar = createAlgoButton("A* Star", startX + (bw + gap) * 5, bottomY, "ASTAR");
         add(btnBFS); add(btnDFS); add(btnDijkstra); add(btnAStar);
 
+        // Status & Cost
         lblStatus = new JLabel("Ready");
-        lblStatus.setBounds(uiX, 450, 250, 30);
+        lblStatus.setBounds((screenW - 300) / 2, bottomY + bh + 15, 300, 30);
         lblStatus.setHorizontalAlignment(SwingConstants.CENTER);
         lblStatus.setFont(new Font("Arial", Font.BOLD, 14));
         lblStatus.setOpaque(true);
         lblStatus.setBackground(Color.LIGHT_GRAY);
         add(lblStatus);
 
-        lblCost = new JLabel("Path Cost: -");
-        lblCost.setBounds(uiX, 485, 250, 25);
+        lblCost = new JLabel("Path Cost: - | Steps: -");
+        lblCost.setBounds((screenW - 400) / 2, bottomY + bh + 45, 400, 25);
+        lblCost.setForeground(Color.WHITE);
         lblCost.setHorizontalAlignment(SwingConstants.CENTER);
         add(lblCost);
     }
 
     private JButton createAlgoButton(String text, int x, int y, String cmd) {
         JButton btn = new JButton(text);
-        btn.setBounds(x, y, 250, 45);
+        btn.setBounds(x, y, 140, 40);
         btn.setFont(new Font("Arial", Font.BOLD, 13));
         btn.setActionCommand(cmd);
         btn.addActionListener(e -> solveWithAlgorithm(cmd));
@@ -116,31 +133,21 @@ public class MazeGame extends JPanel {
 
     private void generateNewMaze() {
         maze = generator.generate(rows, cols);
-        start = maze[0][0];
-        end = maze[rows - 1][cols - 1];
-        start.isStart = true;
-        end.isEnd = true;
-        solution = null;
-        visited = null;
+        start = maze[0][0]; end = maze[rows - 1][cols - 1];
+        start.isStart = true; end.isEnd = true;
+        solution = null; visited = null;
         lblStatus.setText("Maze Generated!");
         lblStatus.setBackground(new Color(76, 175, 80));
-        lblCost.setText("Path Cost: -");
         repaint();
     }
 
     private void solveWithAlgorithm(String algorithm) {
         if (solving) return;
-        solving = true;
-        setButtonsEnabled(false);
+        solving = true; setButtonsEnabled(false);
         lblStatus.setText("Solving with " + algorithm + "...");
         lblStatus.setBackground(new Color(255, 193, 7));
 
-        for (Cell[] row : maze) {
-            for (Cell c : row) {
-                c.visited = false;
-                c.inSolution = false;
-            }
-        }
+        for (Cell[] row : maze) { for (Cell c : row) { c.visited = false; c.inSolution = false; }}
 
         MazeSolver.Result result = switch (algorithm) {
             case "BFS" -> solver.solveBFS(maze, start, end);
@@ -150,37 +157,41 @@ public class MazeGame extends JPanel {
             default -> null;
         };
 
-        if (result != null && result.path != null) {
-            visited = result.visitedCells;
-            solution = result.path;
+        if (result != null && result.path != null && !result.path.isEmpty()) {
+            visited = result.visitedCells; solution = result.path;
             animateSearch();
         } else {
-            lblStatus.setText("No Solution!");
+            lblStatus.setText("No Solution Found!");
             lblStatus.setBackground(Color.RED);
-            solving = false;
-            setButtonsEnabled(true);
+            solving = false; setButtonsEnabled(true);
         }
     }
 
+    // --- ANIMASI SCANNING DIPERCEPAT (BATCH PROCESSING) ---
     private void animateSearch() {
         animationIndex = 0;
         List<Cell> visitList = new ArrayList<>(visited);
-        animationTimer = new Timer(25, e -> {
-            if (animationIndex < visitList.size()) {
-                visitList.get(animationIndex).visited = true;
-                animationIndex++;
-                repaint();
-            } else {
-                ((Timer) e.getSource()).stop();
-                animateSolution();
+
+        // Delay dikurangi ke 5ms dan memproses 5 sel sekaligus per tick
+        animationTimer = new Timer(5, e -> {
+            for (int i = 0; i < 5; i++) {
+                if (animationIndex < visitList.size()) {
+                    visitList.get(animationIndex).visited = true;
+                    animationIndex++;
+                } else {
+                    ((Timer) e.getSource()).stop();
+                    animateSolution();
+                    break;
+                }
             }
+            repaint();
         });
         animationTimer.start();
     }
 
     private void animateSolution() {
         animationIndex = 0;
-        Timer solutionTimer = new Timer(40, e -> {
+        Timer solutionTimer = new Timer(20, e -> {
             if (animationIndex < solution.size()) {
                 solution.get(animationIndex).inSolution = true;
                 animationIndex++;
@@ -191,8 +202,7 @@ public class MazeGame extends JPanel {
                 lblStatus.setText("Solution Found!");
                 lblStatus.setBackground(new Color(76, 175, 80));
                 lblCost.setText("Path Cost: " + cost + " | Steps: " + solution.size());
-                solving = false;
-                setButtonsEnabled(true);
+                solving = false; setButtonsEnabled(true);
             }
         });
         solutionTimer.start();
@@ -215,11 +225,8 @@ public class MazeGame extends JPanel {
         // --- DINAMIS CENTER CALCULATION ---
         int totalMazeWidth = cols * cellSize;
         int totalMazeHeight = rows * cellSize;
-
-        // Gunakan getWidth() dan getHeight() agar otomatis menyesuaikan ukuran layar
         int offsetX = (getWidth() - totalMazeWidth) / 2;
-        int offsetY = (getHeight() - totalMazeHeight) / 2;
-        // ----------------------------------
+        int offsetY = (getHeight() - totalMazeHeight - 100) / 2 + 30;
 
         for (int r = 0; r < rows; r++) {
             for (int c = 0; c < cols; c++) {
