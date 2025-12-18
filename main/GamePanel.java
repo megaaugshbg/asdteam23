@@ -2,17 +2,14 @@ package main;
 
 import logic.GameController;
 import logic.PathFinder;
-import model.Dice;
-import model.GameMap;
-import model.Node;
-import model.Player;
+import logic.PrimeChecker;
+import model.*;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.geom.AffineTransform;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
-import java.util.Optional;
 
 public class GamePanel extends JPanel {
 
@@ -22,354 +19,260 @@ public class GamePanel extends JPanel {
     private int currentPlayerIndex = 0;
     private final Image mapImage;
 
-    // UI Components
-    private JButton rollDiceBtn;
-    private JButton backBtn;
+    // UI
+    private JButton rollDiceBtn, backBtn;
     private JLabel statusLabel;
     private JTextArea scoreArea;
+    private JPanel statusPanel;
+    private JLabel legend;
 
-    private static final int MAX_NODE_ID = 64;
+    // Animasi
+    private Timer movementTimer;
+    private List<Node> currentPathQueue;
+    private int pathIndex = 0;
+    private static final int ANIMATION_SPEED = 10;
+    private static final double MOVE_SPEED = 5.0;
 
     public GamePanel(GameFrame frame, int numPlayers) {
         this.frame = frame;
         this.gameMap = new GameMap();
-
         setLayout(null);
         setBackground(Color.WHITE);
 
+        java.net.URL imgUrl = getClass().getResource("/Asset/map.png");
+        mapImage = (imgUrl != null) ? new ImageIcon(imgUrl).getImage() : null;
+
         players = initializePlayers(numPlayers);
+        Node start = gameMap.getNodeById(1);
+        for(Player p : players) p.setVisualPosition(start.x, start.y);
 
-        // Load map image
-        java.net.URL imageURL = getClass().getResource("/Asset/map.png");
-        if (imageURL != null) {
-            mapImage = new ImageIcon(imageURL).getImage();
-        } else {
-            System.err.println("Warning: Map image not found at /Asset/map.png");
-            mapImage = null;
-        }
-
-        setupGameUI();
-
-        // Cek Prime Rule untuk player pertama
-        GameController.checkPrimeRule(players.get(0), gameMap);
+        setupUI();
         updateStatus();
     }
 
     private List<Player> initializePlayers(int count) {
-        List<Player> pList = new ArrayList<>();
-        Color[] colors = {
-                new Color(30, 144, 255),   // Blue
-                new Color(220, 20, 60),    // Red
-                new Color(50, 205, 50),    // Green
-                new Color(255, 140, 0)     // Orange
-        };
-        for (int i = 0; i < count; i++) {
-            pList.add(new Player("Player " + (i + 1), colors[i % colors.length]));
-        }
-        return pList;
+        List<Player> list = new ArrayList<>();
+        Color[] cols = { new Color(30, 144, 255), new Color(220, 20, 60), new Color(50, 205, 50), new Color(255, 140, 0) };
+        for (int i = 0; i < count; i++) list.add(new Player("Player " + (i + 1), cols[i % cols.length]));
+        return list;
     }
 
-    private void setupGameUI() {
-        backBtn = new JButton("🏠 Back");
-        backBtn.setBounds(20, 20, 120, 35);
-        backBtn.setFont(new Font("Arial", Font.BOLD, 14));
-        backBtn.setBackground(new Color(244, 67, 54));
-        backBtn.setForeground(Color.WHITE);
-        backBtn.setFocusPainted(false);
-        backBtn.addActionListener(e -> {
-            int confirm = JOptionPane.showConfirmDialog(this,
-                    "Are you sure you want to quit?",
-                    "Quit Game",
-                    JOptionPane.YES_NO_OPTION);
-            if (confirm == JOptionPane.YES_OPTION) {
-                frame.showDashboard();
-            }
-        });
-        add(backBtn);
+    private void setupUI() {
+        Dimension sc = Toolkit.getDefaultToolkit().getScreenSize();
+        int uiWidth = 260; int uiX = sc.width - uiWidth - 20;
 
-        // Status Panel
-        JPanel statusPanel = new JPanel();
-        statusPanel.setBounds(750, 30, 230, 100);
-        statusPanel.setBackground(new Color(102, 126, 234));
-        statusPanel.setLayout(new BoxLayout(statusPanel, BoxLayout.Y_AXIS));
-        statusPanel.setBorder(BorderFactory.createLineBorder(Color.WHITE, 2));
+        backBtn = new JButton("🏠 Quit Game"); backBtn.setBounds(30, 30, 150, 45);
+        backBtn.setFont(new Font("Arial", Font.BOLD, 14)); backBtn.setBackground(new Color(244, 67, 54));
+        backBtn.setForeground(Color.WHITE); backBtn.addActionListener(e -> frame.showDashboard()); add(backBtn);
 
-        statusLabel = new JLabel();
-        statusLabel.setFont(new Font("Arial", Font.BOLD, 16));
-        statusLabel.setForeground(Color.WHITE);
-        statusLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-        statusPanel.add(Box.createVerticalStrut(10));
-        statusPanel.add(statusLabel);
-        add(statusPanel);
+        statusPanel = new JPanel(); statusPanel.setBounds(uiX, 50, uiWidth, 60);
+        statusPanel.setBackground(new Color(100, 149, 237)); statusPanel.setBorder(BorderFactory.createLineBorder(Color.BLACK, 2));
+        statusLabel = new JLabel("Turn: Player 1"); statusLabel.setForeground(Color.WHITE);
+        statusLabel.setFont(new Font("Arial", Font.BOLD, 18)); statusPanel.add(statusLabel); add(statusPanel);
 
-        // Score Area
-        JLabel scoreTitle = new JLabel("📊 SCOREBOARD");
-        scoreTitle.setBounds(750, 150, 230, 25);
-        scoreTitle.setFont(new Font("Arial", Font.BOLD, 14));
-        scoreTitle.setOpaque(true);
-        scoreTitle.setBackground(new Color(102, 126, 234));
-        scoreTitle.setForeground(Color.WHITE);
-        scoreTitle.setHorizontalAlignment(SwingConstants.CENTER);
-        add(scoreTitle);
+        JLabel scoreTitle = new JLabel("📊 SCOREBOARD"); scoreTitle.setBounds(uiX, 120, uiWidth, 20);
+        scoreTitle.setFont(new Font("Arial", Font.BOLD, 14)); scoreTitle.setHorizontalAlignment(SwingConstants.CENTER); add(scoreTitle);
+        scoreArea = new JTextArea(); scoreArea.setBounds(uiX, 145, uiWidth, 140);
+        scoreArea.setEditable(false); scoreArea.setFont(new Font("Monospaced", Font.BOLD, 13));
+        scoreArea.setBackground(new Color(240, 248, 255)); scoreArea.setBorder(BorderFactory.createLineBorder(Color.GRAY, 1)); add(scoreArea);
 
-        scoreArea = new JTextArea();
-        scoreArea.setBounds(750, 175, 230, 150);
-        scoreArea.setEditable(false);
-        scoreArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
-        scoreArea.setBackground(new Color(240, 240, 240));
-        scoreArea.setBorder(BorderFactory.createLineBorder(new Color(102, 126, 234), 2));
-        add(scoreArea);
+        rollDiceBtn = new JButton("🎲 ROLL DICE"); rollDiceBtn.setBounds(uiX, 300, uiWidth, 60);
+        rollDiceBtn.setBackground(new Color(255, 193, 7)); rollDiceBtn.setForeground(Color.BLACK);
+        rollDiceBtn.setFont(new Font("Arial", Font.BOLD, 18)); rollDiceBtn.addActionListener(e -> rollDiceAction()); add(rollDiceBtn);
 
-        // Dice Buttons
-        rollDiceBtn = new JButton("🎲 Roll Green Dice");
-        rollDiceBtn.setBounds(750, 350, 230, 45);
-        rollDiceBtn.setFont(new Font("Arial", Font.BOLD, 14));
-        rollDiceBtn.setBackground(new Color(76, 175, 80));
-        rollDiceBtn.setForeground(Color.WHITE);
-        rollDiceBtn.setFocusPainted(false);
-        rollDiceBtn.addActionListener(e -> rollGreenDice());
-        add(rollDiceBtn);
-
-        JButton redDiceBtn = new JButton("🎲 Roll Red Dice");
-        redDiceBtn.setBounds(750, 405, 230, 45);
-        redDiceBtn.setFont(new Font("Arial", Font.BOLD, 14));
-        redDiceBtn.setBackground(new Color(244, 67, 54));
-        redDiceBtn.setForeground(Color.WHITE);
-        redDiceBtn.setFocusPainted(false);
-        redDiceBtn.addActionListener(e -> rollRedDice());
-        add(redDiceBtn);
-
-        // Legend
-        JLabel legend = new JLabel("<html>⭐ Star Node = Bonus Turn<br>🏁 = Finish<br>Coin = +10 Score</html>");
-        legend.setBounds(750, 480, 230, 80);
-        legend.setFont(new Font("Arial", Font.PLAIN, 11));
-        legend.setVerticalAlignment(SwingConstants.TOP);
-        legend.setBorder(BorderFactory.createTitledBorder("Legend"));
-        add(legend);
+        legend = new JLabel("<html><b>Game Info:</b><br>🎲 Dice Chances:<br>🟩 80% Green (Forward)<br>🟥 20% Red (Backward)<br><br>⭐ Star Node = Bonus Turn<br>💰 Coin = +100 Score<br>🏁 = Finish Line</html>");
+        legend.setBounds(uiX, 380, uiWidth, 140); legend.setFont(new Font("Arial", Font.PLAIN, 14));
+        legend.setVerticalAlignment(SwingConstants.TOP); legend.setBorder(BorderFactory.createTitledBorder("Legend"));
+        legend.setOpaque(true); legend.setBackground(new Color(255, 255, 255, 220)); add(legend);
     }
 
     private void updateStatus() {
         Player p = players.get(currentPlayerIndex);
         statusLabel.setText(p.name + "'s Turn");
-
+        rollDiceBtn.setEnabled(!p.isMoving);
         StringBuilder sb = new StringBuilder();
-        for (Player player : players) {
-            sb.append(String.format("%-10s", player.name))
-                    .append(" | Score: ").append(String.format("%3d", player.score))
-                    .append(" | Node: ").append(String.format("%2d", player.currentNode));
-
-            if (player.shortestPathActive) {
-                sb.append(" 🔥");
-            }
+        for (Player pl : players) {
+            sb.append(" ").append(String.format("%-8s", pl.name)).append("| ").append(pl.score).append(" pts");
+            if(pl.shortestPathActive) sb.append(" [Prime]");
             sb.append("\n");
         }
-        scoreArea.setText(sb.toString());
-
-        repaint();
+        scoreArea.setText(sb.toString()); repaint();
     }
 
-    private void rollGreenDice() {
+    private void rollDiceAction() {
         Player p = players.get(currentPlayerIndex);
-        int steps = Dice.rollGreen();
+        if (p.isMoving) return;
 
-        JOptionPane.showMessageDialog(this,
-                p.name + " rolled " + steps + "!\n🎲 Green Dice - Move Forward",
-                "Dice Roll",
-                JOptionPane.INFORMATION_MESSAGE);
+        int steps = Dice.roll();
+        boolean isGreen = Dice.isGreen();
+        String msg; List<Node> path;
+
+        if (isGreen) {
+            msg = "🎲 Rolled " + steps + " (GREEN)\n✅ Move FORWARD!";
+            path = calculateForwardPath(p, steps);
+        } else {
+            msg = "🎲 Rolled " + steps + " (RED)\n🔻 Move BACKWARD!";
+            path = calculateBackwardPath(p, steps);
+        }
+
+        JOptionPane.showMessageDialog(this, msg, "Dice Result",
+                isGreen ? JOptionPane.INFORMATION_MESSAGE : JOptionPane.WARNING_MESSAGE);
+        startAnimation(p, path);
+    }
+
+    // --- LOGIKA UTAMA PERGERAKAN & SHORTCUT ---
+    private List<Node> calculateForwardPath(Player p, int steps) {
+        List<Node> path = new ArrayList<>();
+        Node current = gameMap.getNodeById(p.currentNode);
+
+        // Cek Start Prima
+        boolean startIsPrime = PrimeChecker.isPrime(p.currentNode);
+        System.out.println("\n--- TURN: " + p.name + " (Start: " + p.currentNode + ", Prime: " + startIsPrime + ") ---");
 
         if (p.shortestPathActive) {
-            applyShortestPath(p, steps);
+            List<Node> sp = PathFinder.dijkstra(current, gameMap.finishNode);
+            if (!sp.isEmpty() && sp.get(0).id == current.id) sp.remove(0);
+            for(int i=0; i<steps && i<sp.size(); i++) path.add(sp.get(i));
             p.shortestPathActive = false;
-        } else {
-            moveNormal(p, steps);
+            return path;
         }
 
-        checkWinCondition(p);
+        int stepsRemaining = steps;
+        Node tracker = current;
 
-        Node currentNode = gameMap.getNodeById(p.currentNode);
-
-        if (currentNode != null && currentNode.isStar) {
-            JOptionPane.showMessageDialog(this,
-                    "⭐ " + p.name + " landed on a STAR NODE!\n🎉 Roll again!",
-                    "Bonus Turn!",
-                    JOptionPane.INFORMATION_MESSAGE);
-        } else {
-            nextTurn();
-        }
-        updateStatus();
-    }
-
-    private void applyShortestPath(Player p, int steps) {
-        Node start = gameMap.getNodeById(p.currentNode);
-        List<Node> path = PathFinder.dijkstra(start, gameMap.finishNode);
-
-        if (path.size() > 1 && path.get(0).equals(start)) {
-            int moveIndex = Math.min(steps, path.size() - 1);
-            Node next = path.get(moveIndex);
-
-            if (next.id > p.currentNode || next.id == gameMap.finishNode.id) {
-                GameController.movePlayer(p, next, gameMap);
-                JOptionPane.showMessageDialog(this,
-                        "🔥 Prime Rule Activated!\n" + p.name + " used Shortest Path to Node " + next.id,
-                        "Prime Power!",
-                        JOptionPane.INFORMATION_MESSAGE);
-            } else {
-                moveNormal(p, steps);
+        while (stepsRemaining > 0) {
+            Node next = null;
+            // Cari node tetangga (urutan ID naik)
+            for(Node n : tracker.neighbors) {
+                if(n.id == tracker.id + 1) { next = n; break; }
             }
-        } else {
-            moveNormal(p, steps);
+            if (next == null) break;
+
+            // --- DETEKSI SHORTCUT ---
+            if (gameMap.shortcuts.containsKey(next.id)) {
+                // Ada shortcut di depan (misal node 8)
+                System.out.println("  ! Shortcut found at Node " + next.id + " -> " + gameMap.shortcuts.get(next.id));
+
+                if (startIsPrime) {
+                    // SYARAT TERPENUHI
+                    // 1. Masuk ke mulut shortcut (misal 8)
+                    path.add(next);
+                    stepsRemaining--; // Kurangi langkah (masuk ke mulut bayar 1 langkah)
+
+                    // 2. Teleport ke Exit
+                    int exitId = gameMap.shortcuts.get(next.id);
+                    Node exitNode = gameMap.getNodeById(exitId);
+
+                    if (exitNode != null) {
+                        path.add(exitNode); // Tambahkan node exit ke path agar animasi lompat
+                        tracker = exitNode; // Tracker logika pindah ke exit
+                        System.out.println("  >>> TAKING SHORTCUT! Teleport to " + exitId + ". Remaining Steps: " + stepsRemaining);
+                    }
+                } else {
+                    // TIDAK MEMENUHI SYARAT (Bukan start prima)
+                    path.add(next);
+                    tracker = next;
+                    stepsRemaining--;
+                }
+            } else {
+                // JALAN BIASA
+                path.add(next);
+                tracker = next;
+                stepsRemaining--;
+            }
         }
+        return path;
     }
 
-    private void moveNormal(Player p, int steps) {
-        Node current = gameMap.getNodeById(p.currentNode);
-        Node nextNode = findNextNode(current, steps);
-
-        if (nextNode != null && nextNode.id <= MAX_NODE_ID) {
-            GameController.movePlayer(p, nextNode, gameMap);
-        } else if (nextNode != null && nextNode.id > MAX_NODE_ID) {
-            GameController.movePlayer(p, gameMap.finishNode, gameMap);
-        }
-    }
-
-    private Node findNextNode(Node start, int steps) {
-        Node current = start;
+    private List<Node> calculateBackwardPath(Player p, int steps) {
+        List<Node> path = new ArrayList<>();
+        Node tracker = gameMap.getNodeById(p.currentNode);
         for (int i = 0; i < steps; i++) {
-            final Node iterationCurrent = current;
-
-            Optional<Node> nextOpt = current.neighbors.stream()
-                    .filter(n -> n.id > iterationCurrent.id)
-                    .max(Comparator.comparingInt(n -> n.id));
-
-            Node next = nextOpt.orElse(
-                    current.neighbors.stream()
-                            .filter(n -> !n.equals(iterationCurrent))
-                            .findFirst()
-                            .orElse(null)
-            );
-
-            if (next == null || next.equals(current) || next.id > MAX_NODE_ID) break;
-
-            current = next;
+            if (tracker.id <= 1) break;
+            Node prev = gameMap.getNodeById(tracker.id - 1);
+            if (prev != null) { path.add(prev); tracker = prev; }
         }
-        return current;
+        return path;
     }
 
-    private void rollRedDice() {
-        Player p = players.get(currentPlayerIndex);
-        boolean isRed = Dice.rollRed();
+    private void startAnimation(Player p, List<Node> path) {
+        if (path.isEmpty()) { nextTurn(); return; }
+        p.isMoving = true; currentPathQueue = path; pathIndex = 0; updateStatus();
 
-        if (isRed) {
-            GameController.redDiceEffect(p);
-            JOptionPane.showMessageDialog(this,
-                    "🎲 " + p.name + " rolled RED!\n⬅️ Back to Node " + p.currentNode,
-                    "Red Dice Effect",
-                    JOptionPane.WARNING_MESSAGE);
-        } else {
-            JOptionPane.showMessageDialog(this,
-                    "🎲 " + p.name + " rolled Green\n✅ No effect",
-                    "Red Dice - Safe!",
-                    JOptionPane.INFORMATION_MESSAGE);
+        movementTimer = new Timer(ANIMATION_SPEED, e -> {
+            if (pathIndex >= currentPathQueue.size()) {
+                ((Timer)e.getSource()).stop(); finishAnimation(p); return;
+            }
+            Node target = currentPathQueue.get(pathIndex);
+            double dx = target.x - p.visualX; double dy = target.y - p.visualY;
+            double dist = Math.sqrt(dx*dx + dy*dy);
+
+            if (dist <= MOVE_SPEED) {
+                p.visualX = target.x; p.visualY = target.y; p.currentNode = target.id; pathIndex++;
+            } else {
+                p.visualX += (dx / dist) * MOVE_SPEED; p.visualY += (dy / dist) * MOVE_SPEED;
+            }
+            repaint();
+        });
+        movementTimer.start();
+    }
+
+    private void finishAnimation(Player p) {
+        p.isMoving = false;
+        Node finalNode = gameMap.getNodeById(p.currentNode);
+        GameController.movePlayer(p, finalNode, gameMap);
+
+        if (p.currentNode == 64) {
+            JOptionPane.showMessageDialog(this, "🏆 " + p.name + " WINS!"); frame.showDashboard(); return;
         }
-
-        nextTurn();
-        updateStatus();
+        if (finalNode.isStar) {
+            JOptionPane.showMessageDialog(this, "⭐ STAR NODE! Bonus Turn!"); updateStatus(); return;
+        }
+        nextTurn(); updateStatus();
     }
 
     private void nextTurn() {
         currentPlayerIndex = (currentPlayerIndex + 1) % players.size();
         Player p = players.get(currentPlayerIndex);
-        GameController.checkPrimeRule(p, gameMap);
-    }
-
-    private void checkWinCondition(Player p) {
-        if (p.currentNode == gameMap.finishNode.id) {
-            JOptionPane.showMessageDialog(this,
-                    "🎉🏆 " + p.name + " WINS! 🏆🎉\n\nFinal Score: " + p.score + " points\nSteps Taken: " + (p.currentNode - 1),
-                    "GAME OVER - VICTORY!",
-                    JOptionPane.INFORMATION_MESSAGE);
-            frame.showDashboard();
-        }
+        GameController.checkPrimeRule(p, gameMap); updateStatus();
     }
 
     @Override
     protected void paintComponent(Graphics g) {
-        super.paintComponent(g);
-        Graphics2D g2d = (Graphics2D) g;
+        super.paintComponent(g); Graphics2D g2d = (Graphics2D) g;
+        g2d.setColor(new Color(135, 206, 250)); g2d.fillRect(0, 0, getWidth(), getHeight());
+
+        double scale = (getHeight() * 0.95) / 680.0;
+        int offX = (int) ((getWidth() - (720.0 * scale)) / 2); int offY = (int) ((getHeight() - (680.0 * scale)) / 2);
+
+        AffineTransform old = g2d.getTransform(); g2d.translate(offX, offY); g2d.scale(scale, scale);
+
+        if (mapImage != null) g2d.drawImage(mapImage, 0, 0, 720, 680, null);
+
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
-        // Draw Map Image
-        if (mapImage != null) {
-            g2d.drawImage(mapImage, 0, 0, 720, 680, null);
-        } else {
-            // Fallback: Draw blue background
-            g2d.setColor(new Color(135, 206, 250));
-            g2d.fillRect(0, 0, 720, 680);
-        }
-
-        // Draw Links
-        g2d.setColor(new Color(139, 69, 19, 150));
         g2d.setStroke(new BasicStroke(3));
         for (Node n : gameMap.nodes) {
-            for (Node neighbor : n.neighbors) {
-                if (n.id < neighbor.id) {
-                    g2d.drawLine(n.x, n.y, neighbor.x, neighbor.y);
+            for (Node nb : n.neighbors) {
+                if (n.id < nb.id && Math.abs(n.id - nb.id) == 1) {
+                    g2d.setColor(new Color(139, 69, 19, 150)); g2d.drawLine(n.x, n.y, nb.x, nb.y);
                 }
             }
+            if(gameMap.shortcuts.containsKey(n.id)) {
+                Node target = gameMap.getNodeById(gameMap.shortcuts.get(n.id));
+                g2d.setColor(new Color(255, 0, 0, 180));
+                g2d.setStroke(new BasicStroke(4, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND, 10, new float[]{10}, 0));
+                g2d.drawLine(n.x, n.y, target.x, target.y);
+            }
         }
-
-        // Draw Nodes
-        for (Node n : gameMap.nodes) {
-            n.draw(g2d);
-        }
-
-        // Draw Players dengan offset untuk multiple players
-        for (int i = 0; i < players.size(); i++) {
+        for(Node n : gameMap.nodes) n.draw(g2d);
+        for(int i=0; i<players.size(); i++) {
             Player p = players.get(i);
-            Node node = gameMap.getNodeById(p.currentNode);
-            if (node != null) {
-                // Calculate offset untuk multiple players di node yang sama
-                int offsetX = 0;
-                int offsetY = 0;
-
-                if (players.size() == 2) {
-                    offsetX = (i == 0) ? -15 : 15;
-                } else if (players.size() == 3) {
-                    offsetX = (i == 0) ? -15 : (i == 1) ? 0 : 15;
-                } else if (players.size() == 4) {
-                    offsetX = (i % 2 == 0) ? -15 : 15;
-                    offsetY = (i < 2) ? -15 : 15;
-                }
-
-                int playerX = node.x + offsetX;
-                int playerY = node.y + offsetY + 30;
-
-                // Draw shadow
-                g2d.setColor(new Color(0, 0, 0, 80));
-                g2d.fillOval(playerX - 11, playerY - 9, 22, 22);
-
-                // Draw player
-                g2d.setColor(p.color);
-                g2d.fillOval(playerX - 12, playerY - 12, 24, 24);
-
-                // Draw border
-                if (i == currentPlayerIndex) {
-                    g2d.setColor(new Color(255, 215, 0));
-                    g2d.setStroke(new BasicStroke(3));
-                } else {
-                    g2d.setColor(Color.WHITE);
-                    g2d.setStroke(new BasicStroke(2));
-                }
-                g2d.drawOval(playerX - 12, playerY - 12, 24, 24);
-
-                // Draw player number
-                g2d.setColor(Color.WHITE);
-                g2d.setFont(new Font("Arial", Font.BOLD, 12));
-                String numStr = String.valueOf(i + 1);
-                FontMetrics fm = g2d.getFontMetrics();
-                int textWidth = fm.stringWidth(numStr);
-                g2d.drawString(numStr, playerX - textWidth / 2, playerY + 4);
-            }
+            int px = (int) p.visualX + ((players.size() > 1 && i%2!=0) ? 10 : -10);
+            int py = (int) p.visualY - 15;
+            g2d.setColor(new Color(0,0,0,80)); g2d.fillOval(px-10, py+5, 20, 10);
+            g2d.setColor(p.color); g2d.fillOval(px-10, py-10, 20, 20);
+            if(i == currentPlayerIndex) { g2d.setColor(Color.YELLOW); g2d.setStroke(new BasicStroke(2)); g2d.drawOval(px-10, py-10, 20, 20); }
         }
+        g2d.setTransform(old);
     }
 }

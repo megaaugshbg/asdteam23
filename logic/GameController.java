@@ -8,23 +8,18 @@ public class GameController {
         p.previousNode = p.currentNode;
         p.currentNode = next.id;
 
-        // Check for Score System
+        // --- SISTEM SKOR BARU ---
         Node currentNode = gameMap.getNodeById(p.currentNode);
         if (currentNode != null && currentNode.hasScore) {
-            p.score += 10;
-            currentNode.hasScore = false;
-            System.out.println(p.name + " collected score! Total: " + p.score);
+            p.score += 100; // Tambah 100 Poin
+            currentNode.hasScore = false; // Koin diambil
+            System.out.println(p.name + " collected 100 points! Total: " + p.score);
         }
-    }
-
-    public static void redDiceEffect(Player p) {
-        p.currentNode = p.previousNode;
     }
 
     public static void checkPrimeRule(Player p, GameMap gameMap) {
         if (PrimeChecker.isPrime(p.currentNode)) {
             p.shortestPathActive = true;
-            System.out.println(p.name + ": 🔥 Prime Rule Active! Next move uses Shortest Path.");
         }
     }
 }
