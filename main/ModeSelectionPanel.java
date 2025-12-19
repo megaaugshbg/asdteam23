@@ -3,30 +3,48 @@ package main;
 import javax.swing.*;
 import java.awt.*;
 import java.util.Enumeration;
+import java.net.URL;
 
 public class ModeSelectionPanel extends JPanel {
 
-    private final GameFrame frame; // Dibuat final
-    private final ButtonGroup playerGroup; // Dibuat final
+    private final GameFrame frame;
+    private final ButtonGroup playerGroup;
+    private JLabel backgroundLabel;
 
     public ModeSelectionPanel(GameFrame frame) {
         this.frame = frame;
         setLayout(null);
-        setBackground(Color.WHITE);
+        // Set background panel utama transparan agar GIF terlihat
+        setOpaque(false);
 
-        // ===== Title =====
+        // Hitung posisi tengah layar
+        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+        int screenWidth = screenSize.width;
+        int screenHeight = screenSize.height;
+        int centerX = screenWidth / 2;
+        int centerY = screenHeight / 2;
+
+        // ===== 1. UI COMPONENTS =====
+
+        // Title
         JLabel title = new JLabel("Choose Number of Players");
-        title.setFont(new Font("Arial", Font.BOLD, 28));
-        title.setBounds(300, 80, 450, 40);
+        title.setFont(new Font("Arial", Font.BOLD, 36)); // Ukuran diperbesar sedikit
+        title.setHorizontalAlignment(SwingConstants.CENTER);
+        title.setBounds(centerX - 300, centerY - 200, 600, 50);
+        title.setForeground(Color.WHITE); // Ubah ke putih agar kontras dengan background
         add(title);
 
-        // ===== Radio Buttons =====
+        // Radio Buttons Group
         playerGroup = new ButtonGroup();
 
-        JRadioButton p1 = createRadio("1 Player", 420, 160, "1");
-        JRadioButton p2 = createRadio("2 Players", 420, 200, "2");
-        JRadioButton p3 = createRadio("3 Players", 420, 240, "3");
-        JRadioButton p4 = createRadio("4 Players", 420, 280, "4");
+        int radioX = centerX - 80;
+        int startY = centerY - 120;
+        int gap = 45;
+
+        JRadioButton p1 = createRadio("1 Player", radioX, startY, "1");
+        JRadioButton p2 = createRadio("2 Players", radioX, startY + gap, "2");
+        JRadioButton p3 = createRadio("3 Players", radioX, startY + (gap * 2), "3");
+        JRadioButton p4 = createRadio("4 Players", radioX, startY + (gap * 3), "4");
 
         p1.setSelected(true);
 
@@ -40,31 +58,49 @@ public class ModeSelectionPanel extends JPanel {
         add(p3);
         add(p4);
 
-        // ===== Start Button =====
+        // Start Button
         JButton startBtn = new JButton("Start Game");
-        startBtn.setBounds(380, 360, 200, 45);
-        startBtn.setFont(new Font("Arial", Font.BOLD, 16));
+        startBtn.setBounds(centerX - 100, centerY + 100, 200, 50);
+        startBtn.setFont(new Font("Arial", Font.BOLD, 18));
+        startBtn.setBackground(new Color(100, 255, 100));
+        startBtn.setFocusPainted(false);
         startBtn.addActionListener(e -> {
             int numPlayers = getSelectedPlayerCount();
-            frame.showGame(numPlayers); // Panggilan DENGAN argumen
+            frame.showGame(numPlayers);
         });
         add(startBtn);
 
-        // ===== Back Button =====
+        // Back Button
         JButton backBtn = new JButton("Back");
-        backBtn.setBounds(380, 420, 200, 45);
-        backBtn.setFont(new Font("Arial", Font.BOLD, 16));
+        backBtn.setBounds(centerX - 100, centerY + 170, 200, 45);
+        backBtn.setFont(new Font("Arial", Font.PLAIN, 16));
+        backBtn.setFocusPainted(false);
         backBtn.addActionListener(e -> {
             frame.showDashboard();
         });
         add(backBtn);
+
+        // ===== 2. BACKGROUND GIF (TAMBAHKAN PALING TERAKHIR) =====
+        URL gifUrl = getClass().getResource("/Asset/main.gif");
+        if (gifUrl != null) {
+            backgroundLabel = new JLabel(new ImageIcon(gifUrl));
+            backgroundLabel.setBounds(0, 0, screenWidth, screenHeight);
+            add(backgroundLabel);
+        } else {
+            System.err.println("File main.gif tidak ditemukan di package Asset!");
+            setBackground(Color.DARK_GRAY);
+            setOpaque(true);
+        }
     }
 
     private JRadioButton createRadio(String text, int x, int y, String command) {
         JRadioButton rb = new JRadioButton(text);
-        rb.setBounds(x, y, 150, 30);
-        rb.setFont(new Font("Arial", Font.PLAIN, 16));
-        rb.setBackground(Color.WHITE);
+        rb.setBounds(x, y, 200, 35);
+        rb.setFont(new Font("Arial", Font.BOLD, 22));
+        rb.setForeground(Color.WHITE); // Teks radio button jadi putih
+        rb.setOpaque(false); // SANGAT PENTING: Agar kotak radio button tidak menutupi GIF
+        rb.setContentAreaFilled(false);
+        rb.setBorderPainted(false);
         rb.setActionCommand(command);
         return rb;
     }
@@ -76,7 +112,7 @@ public class ModeSelectionPanel extends JPanel {
                 try {
                     return Integer.parseInt(button.getActionCommand());
                 } catch (NumberFormatException e) {
-                    return 1; // Default
+                    return 1;
                 }
             }
         }

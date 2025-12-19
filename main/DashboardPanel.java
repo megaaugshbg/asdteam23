@@ -2,45 +2,110 @@ package main;
 
 import javax.swing.*;
 import java.awt.*;
+import java.net.URL;
 
 public class DashboardPanel extends JPanel {
 
     public DashboardPanel(GameFrame frame) {
+        // Menggunakan null layout agar bisa mengatur posisi secara presisi
         setLayout(null);
-        setBackground(Color.WHITE);
 
-        // ... Implementasi tombol-tombol (sesuai kode Anda) ...
-        JLabel title = new JLabel("Map Board Game");
-        title.setFont(new Font("Arial", Font.BOLD, 36));
-        title.setBounds(300, 100, 400, 50);
+        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+        int screenWidth = screenSize.width;
+        int screenHeight = screenSize.height;
+
+        int centerX = screenWidth / 2;
+        int centerY = screenHeight / 2;
+
+        // --- 1. SETUP UI COMPONENTS (LABEL & TOMBOL) ---
+
+        // Judul
+        JLabel title = new JLabel("Game Collection");
+        title.setFont(new Font("Arial", Font.BOLD, 48));
+        title.setBounds(centerX - 250, centerY - 250, 500, 60);
         title.setHorizontalAlignment(SwingConstants.CENTER);
+        title.setForeground(Color.WHITE); // Mengubah warna teks agar terlihat di atas GIF
         add(title);
 
-        JButton playBtn = new JButton("Play");
-        playBtn.setBounds(400, 200, 200, 50);
-        playBtn.setFont(new Font("Arial", Font.BOLD, 18));
-        playBtn.addActionListener(e -> frame.showModeSelection());
-        add(playBtn);
+        // Ukuran Tombol
+        int btnWidth = 250;
+        int btnHeight = 55;
+        int startY = centerY - 120;
+        int gap = 70;
 
+        // Board Game Button
+        JButton boardGameBtn = new JButton(" Board Game");
+        boardGameBtn.setBounds(centerX - (btnWidth / 2), startY, btnWidth, btnHeight);
+        boardGameBtn.setFont(new Font("Arial", Font.BOLD, 20));
+        boardGameBtn.setBackground(new Color(100, 149, 237));
+        boardGameBtn.setForeground(Color.WHITE);
+        boardGameBtn.setFocusPainted(false);
+        boardGameBtn.addActionListener(e -> {
+            SoundManager.playSound("sound4.wav");
+            frame.showModeSelection();
+        });
+        add(boardGameBtn);
+
+        // Maze Game Button
+        JButton mazeBtn = new JButton(" Maze Solver");
+        mazeBtn.setBounds(centerX - (btnWidth / 2), startY + gap, btnWidth, btnHeight);
+        mazeBtn.setFont(new Font("Arial", Font.BOLD, 20));
+        mazeBtn.setBackground(new Color(76, 175, 80));
+        mazeBtn.setForeground(Color.WHITE);
+        mazeBtn.setFocusPainted(false);
+        mazeBtn.addActionListener(e -> {
+            SoundManager.playSound("sound4.wav");
+            frame.showMazeGame();
+        });
+        add(mazeBtn);
+
+        // Leaderboard Button
         JButton leaderboardBtn = new JButton("Leaderboard");
-        leaderboardBtn.setBounds(400, 270, 200, 45);
+        leaderboardBtn.setBounds(centerX - (btnWidth / 2), startY + (gap * 2), btnWidth, btnHeight);
+        leaderboardBtn.setFont(new Font("Arial", Font.PLAIN, 16));
+        leaderboardBtn.setFocusPainted(false);
+        leaderboardBtn.addActionListener(e -> {
+            SoundManager.playSound("sound4.wav");
+            JOptionPane.showMessageDialog(this, "Leaderboard (Coming Soon)");
+        });
         add(leaderboardBtn);
 
+        // Settings Button
         JButton settingsBtn = new JButton("Settings");
-        settingsBtn.setBounds(400, 330, 200, 45);
+        settingsBtn.setBounds(centerX - (btnWidth / 2), startY + (gap * 3), btnWidth, btnHeight);
+        settingsBtn.setFont(new Font("Arial", Font.PLAIN, 16));
+        settingsBtn.setFocusPainted(false);
+        settingsBtn.addActionListener(e -> {
+            SoundManager.playSound("sound4.wav");
+            JOptionPane.showMessageDialog(this, "Settings (Coming Soon)");
+        });
         add(settingsBtn);
 
-        JButton exitBtn = new JButton("Exit");
-        exitBtn.setBounds(400, 390, 200, 45);
-        exitBtn.addActionListener(e -> System.exit(0));
+        // Exit Button
+        JButton exitBtn = new JButton("Exit Game");
+        exitBtn.setBounds(centerX - (btnWidth / 2), startY + (gap * 4), btnWidth, btnHeight);
+        exitBtn.setFont(new Font("Arial", Font.BOLD, 16));
+        exitBtn.setBackground(new Color(255, 100, 100));
+        exitBtn.setForeground(Color.WHITE);
+        exitBtn.setFocusPainted(false);
+        exitBtn.addActionListener(e -> {
+            SoundManager.playSound("sound4.wav");
+            System.exit(0);
+        });
         add(exitBtn);
 
-        leaderboardBtn.addActionListener(e ->
-                JOptionPane.showMessageDialog(this, "Leaderboard (Coming Soon)")
-        );
+        // --- 2. SETUP BACKGROUND GIF (DITAMBAHKAN PALING TERAKHIR) ---
 
-        settingsBtn.addActionListener(e ->
-                JOptionPane.showMessageDialog(this, "Settings (Coming Soon)")
-        );
+        URL gifUrl = getClass().getResource("/Asset/main.gif");
+        if (gifUrl != null) {
+            ImageIcon backgroundIcon = new ImageIcon(gifUrl);
+            JLabel backgroundLabel = new JLabel(backgroundIcon);
+            // Menyesuaikan ukuran background dengan ukuran panel/layar
+            backgroundLabel.setBounds(0, 0, screenWidth, screenHeight);
+            add(backgroundLabel);
+        } else {
+            System.err.println("File main.gif tidak ditemukan di package Asset!");
+            setBackground(Color.DARK_GRAY); // Fallback jika GIF gagal dimuat
+        }
     }
 }

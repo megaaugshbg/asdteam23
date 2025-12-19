@@ -2,18 +2,22 @@ package main;
 
 import javax.swing.*;
 import java.awt.*;
+import maze.MazeGame;
 
 public class GameFrame extends JFrame {
 
-    private final CardLayout cardLayout; // Dibuat final
-    private final JPanel mainPanel; // Dibuat final
-    private GamePanel gamePanel; // Simpan referensi GamePanel
+    private final CardLayout cardLayout;
+    private final JPanel mainPanel;
+    private GamePanel gamePanel;
+    private MazeGame mazeGame;
 
     public GameFrame() {
         setTitle("Map Board Game");
-        setSize(1000, 700);
+
+        // --- SETTING FULLSCREEN ---
+        setUndecorated(true);
+        setExtendedState(JFrame.MAXIMIZED_BOTH);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
-        setLocationRelativeTo(null);
 
         cardLayout = new CardLayout();
         mainPanel = new JPanel(cardLayout);
@@ -22,11 +26,9 @@ public class GameFrame extends JFrame {
         mainPanel.add(new DashboardPanel(this), "DASHBOARD");
         mainPanel.add(new ModeSelectionPanel(this), "MODE");
 
-        // GamePanel akan diinisialisasi saat masuk mode game
-
         add(mainPanel);
-        showDashboard();
 
+        showDashboard();
         setVisible(true);
     }
 
@@ -39,16 +41,24 @@ public class GameFrame extends JFrame {
         cardLayout.show(mainPanel, "MODE");
     }
 
-    // Metode ini sekarang menerima jumlah pemain
     public void showGame(int numPlayers) {
-        // Buat instance GamePanel baru setiap kali game dimulai
         if (gamePanel != null) {
             mainPanel.remove(gamePanel);
         }
-        // Pastikan GamePanel konstruktor menerima GameFrame dan numPlayers
         gamePanel = new GamePanel(this, numPlayers);
         mainPanel.add(gamePanel, "GAME");
-
         cardLayout.show(mainPanel, "GAME");
+        gamePanel.requestFocusInWindow();
+    }
+
+    // ===== MAZE GAME METHOD =====
+    public void showMazeGame() {
+        if (mazeGame != null) {
+            mainPanel.remove(mazeGame);
+        }
+        mazeGame = new MazeGame(this);
+        mainPanel.add(mazeGame, "MAZE");
+        cardLayout.show(mainPanel, "MAZE");
+        mazeGame.requestFocusInWindow();
     }
 }

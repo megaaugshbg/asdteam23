@@ -3,13 +3,16 @@ package model;
 import java.util.Random;
 
 public class Dice {
-    private static Random rand = new Random();
+    private static final Random rand = new Random();
 
-    public static int rollGreen() {
+    // Mengembalikan angka 1 - 6
+    public static int roll() {
         return rand.nextInt(6) + 1;
     }
 
-    public static boolean rollRed() {
-        return rand.nextBoolean(); // true = merah
+    // Mengembalikan TRUE jika Hijau (Maju), FALSE jika Merah (Mundur)
+    // 80% Hijau, 20% Merah
+    public static boolean isGreen() {
+        return rand.nextInt(100) < 80;
     }
 }
