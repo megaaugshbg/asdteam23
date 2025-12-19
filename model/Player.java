@@ -10,10 +10,7 @@ public class Player {
     public Color color;
     public boolean shortestPathActive = false;
 
-<<<<<<< HEAD
     // --- VARIABEL UNTUK ANIMASI ---
-=======
->>>>>>> main
     public double visualX;
     public double visualY;
     public boolean isMoving = false;

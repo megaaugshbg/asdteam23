@@ -9,20 +9,14 @@ public class MazeGenerator {
     public Cell[][] generate(int rows, int cols) {
         Cell[][] maze = new Cell[rows][cols];
 
-<<<<<<< HEAD
         // Init cells
-=======
->>>>>>> main
         for (int r = 0; r < rows; r++) {
             for (int c = 0; c < cols; c++) {
                 maze[r][c] = new Cell(r, c);
             }
         }
 
-<<<<<<< HEAD
         // Prim's Algorithm
-=======
->>>>>>> main
         Set<Cell> inMaze = new HashSet<>();
         List<Edge> frontier = new ArrayList<>();
 
@@ -40,10 +34,7 @@ public class MazeGenerator {
             }
         }
 
-<<<<<<< HEAD
         // Assign random terrain (except start & end)
-=======
->>>>>>> main
         for (int r = 0; r < rows; r++) {
             for (int c = 0; c < cols; c++) {
                 Cell cell = maze[r][c];

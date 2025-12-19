@@ -7,6 +7,7 @@ import java.net.URL;
 public class DashboardPanel extends JPanel {
 
     public DashboardPanel(GameFrame frame) {
+        // Menggunakan null layout agar bisa mengatur posisi secara presisi
         setLayout(null);
 
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
@@ -16,10 +17,9 @@ public class DashboardPanel extends JPanel {
         int centerX = screenWidth / 2;
         int centerY = screenHeight / 2;
 
-<<<<<<< HEAD
+        // --- 1. SETUP UI COMPONENTS (LABEL & TOMBOL) ---
+
         // Judul
-=======
->>>>>>> main
         JLabel title = new JLabel("Game Collection");
         title.setFont(new Font("Arial", Font.BOLD, 48));
         title.setBounds(centerX - 250, centerY - 250, 500, 60);
@@ -32,8 +32,6 @@ public class DashboardPanel extends JPanel {
         int btnHeight = 55;
         int startY = centerY - 120;
         int gap = 70;
-<<<<<<< HEAD
-=======
 
         // Board Game Button
         JButton boardGameBtn = new JButton(" Board Game");
@@ -48,6 +46,7 @@ public class DashboardPanel extends JPanel {
         });
         add(boardGameBtn);
 
+        // Maze Game Button
         JButton mazeBtn = new JButton(" Maze Solver");
         mazeBtn.setBounds(centerX - (btnWidth / 2), startY + gap, btnWidth, btnHeight);
         mazeBtn.setFont(new Font("Arial", Font.BOLD, 20));
@@ -59,54 +58,11 @@ public class DashboardPanel extends JPanel {
             frame.showMazeGame();
         });
         add(mazeBtn);
->>>>>>> main
-
-        // Board Game Button
-        JButton boardGameBtn = new JButton(" Board Game");
-        boardGameBtn.setBounds(centerX - (btnWidth / 2), startY, btnWidth, btnHeight);
-        boardGameBtn.setFont(new Font("Arial", Font.BOLD, 20));
-        boardGameBtn.setBackground(new Color(100, 149, 237));
-        boardGameBtn.setForeground(Color.WHITE);
-        boardGameBtn.addActionListener(e -> frame.showModeSelection());
-        add(boardGameBtn);
-
-        // Maze Game Button (NEW!)
-        JButton mazeBtn = new JButton(" Maze Solver");
-        mazeBtn.setBounds(centerX - (btnWidth / 2), startY + gap, btnWidth, btnHeight);
-        mazeBtn.setFont(new Font("Arial", Font.BOLD, 20));
-        mazeBtn.setBackground(new Color(76, 175, 80));
-        mazeBtn.setForeground(Color.WHITE);
-        mazeBtn.addActionListener(e -> frame.showMazeGame());
-        add(mazeBtn);
 
         // Leaderboard Button
         JButton leaderboardBtn = new JButton("Leaderboard");
         leaderboardBtn.setBounds(centerX - (btnWidth / 2), startY + (gap * 2), btnWidth, btnHeight);
         leaderboardBtn.setFont(new Font("Arial", Font.PLAIN, 16));
-<<<<<<< HEAD
-        leaderboardBtn.addActionListener(e ->
-                JOptionPane.showMessageDialog(this, "Leaderboard (Coming Soon)")
-        );
-        add(leaderboardBtn);
-
-        // Settings Button
-        JButton settingsBtn = new JButton("Settings");
-        settingsBtn.setBounds(centerX - (btnWidth / 2), startY + (gap * 3), btnWidth, btnHeight);
-        settingsBtn.setFont(new Font("Arial", Font.PLAIN, 16));
-        settingsBtn.addActionListener(e ->
-                JOptionPane.showMessageDialog(this, "Settings (Coming Soon)")
-        );
-        add(settingsBtn);
-
-        // Exit Button
-        JButton exitBtn = new JButton("Exit Game");
-        exitBtn.setBounds(centerX - (btnWidth / 2), startY + (gap * 4), btnWidth, btnHeight);
-        exitBtn.setFont(new Font("Arial", Font.BOLD, 16));
-        exitBtn.setBackground(new Color(255, 100, 100));
-        exitBtn.setForeground(Color.WHITE);
-        exitBtn.addActionListener(e -> System.exit(0));
-        add(exitBtn);
-=======
         leaderboardBtn.setFocusPainted(false);
         leaderboardBtn.addActionListener(e -> {
             SoundManager.playSound("sound4.wav");
@@ -125,6 +81,7 @@ public class DashboardPanel extends JPanel {
         });
         add(settingsBtn);
 
+        // Exit Button
         JButton exitBtn = new JButton("Exit Game");
         exitBtn.setBounds(centerX - (btnWidth / 2), startY + (gap * 4), btnWidth, btnHeight);
         exitBtn.setFont(new Font("Arial", Font.BOLD, 16));
@@ -137,17 +94,18 @@ public class DashboardPanel extends JPanel {
         });
         add(exitBtn);
 
+        // --- 2. SETUP BACKGROUND GIF (DITAMBAHKAN PALING TERAKHIR) ---
+
         URL gifUrl = getClass().getResource("/Asset/main.gif");
         if (gifUrl != null) {
             ImageIcon backgroundIcon = new ImageIcon(gifUrl);
             JLabel backgroundLabel = new JLabel(backgroundIcon);
-
+            // Menyesuaikan ukuran background dengan ukuran panel/layar
             backgroundLabel.setBounds(0, 0, screenWidth, screenHeight);
             add(backgroundLabel);
         } else {
             System.err.println("File main.gif tidak ditemukan di package Asset!");
-            setBackground(Color.DARK_GRAY);
+            setBackground(Color.DARK_GRAY); // Fallback jika GIF gagal dimuat
         }
->>>>>>> main
     }
 }

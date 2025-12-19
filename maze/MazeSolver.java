@@ -4,10 +4,7 @@ import java.util.*;
 
 public class MazeSolver {
 
-<<<<<<< HEAD
     // ===== RESULT CONTAINER =====
-=======
->>>>>>> main
     public static class Result {
         public List<Cell> path;
         public Set<Cell> visitedCells;
@@ -18,10 +15,7 @@ public class MazeSolver {
         }
     }
 
-<<<<<<< HEAD
     // ===== BFS =====
-=======
->>>>>>> main
     public Result solveBFS(Cell[][] maze, Cell start, Cell end) {
         Queue<Cell> q = new LinkedList<>();
         Map<Cell, Cell> parent = new HashMap<>();
@@ -46,10 +40,7 @@ public class MazeSolver {
         return new Result(buildPath(parent, start, end), visited);
     }
 
-<<<<<<< HEAD
     // ===== DFS =====
-=======
->>>>>>> main
     public Result solveDFS(Cell[][] maze, Cell start, Cell end) {
         Stack<Cell> stack = new Stack<>();
         Map<Cell, Cell> parent = new HashMap<>();
@@ -74,10 +65,7 @@ public class MazeSolver {
         return new Result(buildPath(parent, start, end), visited);
     }
 
-<<<<<<< HEAD
     // ===== DIJKSTRA =====
-=======
->>>>>>> main
     public Result solveDijkstra(Cell[][] maze, Cell start, Cell end) {
         Map<Cell, Integer> dist = new HashMap<>();
         Map<Cell, Cell> parent = new HashMap<>();
@@ -108,10 +96,7 @@ public class MazeSolver {
         return new Result(buildPath(parent, start, end), visited);
     }
 
-<<<<<<< HEAD
     // ===== A* =====
-=======
->>>>>>> main
     public Result solveAStar(Cell[][] maze, Cell start, Cell end) {
         Map<Cell, Integer> g = new HashMap<>();
         Map<Cell, Integer> f = new HashMap<>();
@@ -145,10 +130,7 @@ public class MazeSolver {
         return new Result(buildPath(parent, start, end), visited);
     }
 
-<<<<<<< HEAD
     // ===== HELPERS =====
-=======
->>>>>>> main
     private List<Cell> getNeighbors(Cell c, Cell[][] maze) {
         List<Cell> list = new ArrayList<>();
         int r = c.row, col = c.col;

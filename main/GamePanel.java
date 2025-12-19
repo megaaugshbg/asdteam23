@@ -19,20 +19,14 @@ public class GamePanel extends JPanel {
     private int currentPlayerIndex = 0;
     private final Image mapImage;
 
-<<<<<<< HEAD
     // UI
-=======
->>>>>>> main
     private JButton rollDiceBtn, backBtn;
     private JLabel statusLabel;
     private JTextArea scoreArea;
     private JPanel statusPanel;
     private JLabel legend;
 
-<<<<<<< HEAD
     // Animasi
-=======
->>>>>>> main
     private Timer movementTimer;
     private List<Node> currentPathQueue;
     private int pathIndex = 0;
@@ -169,33 +163,22 @@ public class GamePanel extends JPanel {
         if (isGreen) {
             msg = "🎲Rolled " + steps + " (GREEN)\n Move FORWARD!";
             path = calculateForwardPath(p, steps);
+            // Opsional: SoundManager.playSound("sound_move.wav");
         } else {
             msg = " Rolled " + steps + " (RED)\n Move BACKWARD!";
             path = calculateBackwardPath(p, steps);
-<<<<<<< HEAD
-        }
 
-        JOptionPane.showMessageDialog(
-                this,
-                msg,
-                "Dice Result",
-                isGreen ? JOptionPane.INFORMATION_MESSAGE : JOptionPane.WARNING_MESSAGE
-        );
-=======
+            // EFEK SUARA DISINI (Sesuaikan nama file sound2 anda)
             SoundManager.playSound("sound2.wav");
         }
 
         JOptionPane.showMessageDialog(this, msg, "Dice Result",
                 isGreen ? JOptionPane.INFORMATION_MESSAGE : JOptionPane.WARNING_MESSAGE);
->>>>>>> main
 
         startAnimation(p, path);
     }
 
-<<<<<<< HEAD
     // --- LOGIKA UTAMA: PERGERAKAN & SHORTCUT ---
-=======
->>>>>>> main
     private List<Node> calculateForwardPath(Player p, int steps) {
         List<Node> path = new ArrayList<>();
         Node current = gameMap.getNodeById(p.currentNode);
@@ -272,7 +255,6 @@ public class GamePanel extends JPanel {
         if (path.isEmpty()) {
             nextTurn();
             return;
-<<<<<<< HEAD
         }
 
         p.isMoving = true;
@@ -321,65 +303,7 @@ public class GamePanel extends JPanel {
         GameController.movePlayer(p, finalNode, gameMap);
 
         if (p.currentNode == 64) {
-            JOptionPane.showMessageDialog(this, "🏆 " + p.name + " WINS!");
-            frame.showDashboard();
-            return;
-        }
-
-        if (finalNode.isStar) {
-            JOptionPane.showMessageDialog(this, "⭐ STAR NODE! Bonus Turn!");
-            updateStatus();
-            return;
-=======
->>>>>>> main
-        }
-
-        p.isMoving = true;
-        currentPathQueue = path;
-        pathIndex = 0;
-        updateStatus();
-
-        movementTimer = new Timer(ANIMATION_SPEED, e -> {
-            if (pathIndex >= currentPathQueue.size()) {
-                ((Timer) e.getSource()).stop();
-                finishAnimation(p);
-                return;
-            }
-
-            Node target = currentPathQueue.get(pathIndex);
-
-            if (Math.abs(target.id - p.currentNode) > 1) {
-                p.visualX = target.x;
-                p.visualY = target.y;
-                p.currentNode = target.id;
-                pathIndex++;
-                System.out.println("Visual Teleport executed.");
-            } else {
-                double dx = target.x - p.visualX;
-                double dy = target.y - p.visualY;
-                double dist = Math.sqrt(dx * dx + dy * dy);
-
-                if (dist <= MOVE_SPEED) {
-                    p.visualX = target.x;
-                    p.visualY = target.y;
-                    p.currentNode = target.id;
-                    pathIndex++;
-                } else {
-                    p.visualX += (dx / dist) * MOVE_SPEED;
-                    p.visualY += (dy / dist) * MOVE_SPEED;
-                }
-            }
-            repaint();
-        });
-        movementTimer.start();
-    }
-
-    private void finishAnimation(Player p) {
-        p.isMoving = false;
-        Node finalNode = gameMap.getNodeById(p.currentNode);
-        GameController.movePlayer(p, finalNode, gameMap);
-
-        if (p.currentNode == 64) {
+            // EFEK SUARA MENANG DISINI (Sesuaikan nama file sound1 anda)
             SoundManager.playSound("sound1.wav");
 
             JOptionPane.showMessageDialog(this, "🏆 " + p.name + " WINS!");
