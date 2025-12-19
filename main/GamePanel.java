@@ -118,12 +118,12 @@ public class GamePanel extends JPanel {
 
         legend = new JLabel(
                 "<html><b>Game Info:</b><br>" +
-                        "🎲 Dice Chances:<br>" +
-                        "🟩 80% Green (Forward)<br>" +
-                        "🟥 20% Red (Backward)<br><br>" +
-                        "⭐ Star Node = Bonus Turn<br>" +
-                        "💰 Coin = +100 Score<br>" +
-                        "🏁 = Finish Line</html>"
+                        "Dice Chances:<br>" +
+                        "80% Green (Forward)<br>" +
+                        "20% Red (Backward)<br><br>" +
+                        "Star Node = Bonus Turn<br>" +
+                        "Coin = +100 Score<br>" +
+                        "Red = Finish Line</html>"
         );
         legend.setBounds(uiX, 380, uiWidth, 140);
         legend.setFont(new Font("Arial", Font.PLAIN, 14));
@@ -161,7 +161,7 @@ public class GamePanel extends JPanel {
         List<Node> path;
 
         if (isGreen) {
-            msg = "🎲Rolled " + steps + " (GREEN)\n Move FORWARD!";
+            msg = "Rolled " + steps + " (GREEN)\n Move FORWARD!";
             path = calculateForwardPath(p, steps);
             // Opsional: SoundManager.playSound("sound_move.wav");
         } else {
@@ -306,7 +306,7 @@ public class GamePanel extends JPanel {
             // EFEK SUARA MENANG DISINI (Sesuaikan nama file sound1 anda)
             SoundManager.playSound("sound1.wav");
 
-            JOptionPane.showMessageDialog(this, "🏆 " + p.name + " WINS!");
+            JOptionPane.showMessageDialog(this, " " + p.name + " WINS!");
             frame.showDashboard();
             return;
         }

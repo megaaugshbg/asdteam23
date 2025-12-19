@@ -24,7 +24,7 @@ public class DashboardPanel extends JPanel {
         title.setFont(new Font("Arial", Font.BOLD, 48));
         title.setBounds(centerX - 250, centerY - 250, 500, 60);
         title.setHorizontalAlignment(SwingConstants.CENTER);
-        title.setForeground(Color.WHITE); // Mengubah warna teks agar terlihat di atas GIF
+        title.setForeground(Color.WHITE);
         add(title);
 
         // Ukuran Tombol
@@ -41,7 +41,7 @@ public class DashboardPanel extends JPanel {
         boardGameBtn.setForeground(Color.WHITE);
         boardGameBtn.setFocusPainted(false);
         boardGameBtn.addActionListener(e -> {
-            SoundManager.playSound("sound4.wav");
+            // Sound dihapus agar tidak bertabrakan dengan musik latar
             frame.showModeSelection();
         });
         add(boardGameBtn);
@@ -54,7 +54,7 @@ public class DashboardPanel extends JPanel {
         mazeBtn.setForeground(Color.WHITE);
         mazeBtn.setFocusPainted(false);
         mazeBtn.addActionListener(e -> {
-            SoundManager.playSound("sound4.wav");
+            // Sound dihapus agar tidak bertabrakan dengan musik latar
             frame.showMazeGame();
         });
         add(mazeBtn);
@@ -65,7 +65,6 @@ public class DashboardPanel extends JPanel {
         leaderboardBtn.setFont(new Font("Arial", Font.PLAIN, 16));
         leaderboardBtn.setFocusPainted(false);
         leaderboardBtn.addActionListener(e -> {
-            SoundManager.playSound("sound4.wav");
             JOptionPane.showMessageDialog(this, "Leaderboard (Coming Soon)");
         });
         add(leaderboardBtn);
@@ -76,7 +75,6 @@ public class DashboardPanel extends JPanel {
         settingsBtn.setFont(new Font("Arial", Font.PLAIN, 16));
         settingsBtn.setFocusPainted(false);
         settingsBtn.addActionListener(e -> {
-            SoundManager.playSound("sound4.wav");
             JOptionPane.showMessageDialog(this, "Settings (Coming Soon)");
         });
         add(settingsBtn);
@@ -89,23 +87,20 @@ public class DashboardPanel extends JPanel {
         exitBtn.setForeground(Color.WHITE);
         exitBtn.setFocusPainted(false);
         exitBtn.addActionListener(e -> {
-            SoundManager.playSound("sound4.wav");
             System.exit(0);
         });
         add(exitBtn);
 
-        // --- 2. SETUP BACKGROUND GIF (DITAMBAHKAN PALING TERAKHIR) ---
-
+        // --- 2. SETUP BACKGROUND GIF ---
         URL gifUrl = getClass().getResource("/Asset/main.gif");
         if (gifUrl != null) {
             ImageIcon backgroundIcon = new ImageIcon(gifUrl);
             JLabel backgroundLabel = new JLabel(backgroundIcon);
-            // Menyesuaikan ukuran background dengan ukuran panel/layar
             backgroundLabel.setBounds(0, 0, screenWidth, screenHeight);
             add(backgroundLabel);
         } else {
-            System.err.println("File main.gif tidak ditemukan di package Asset!");
-            setBackground(Color.DARK_GRAY); // Fallback jika GIF gagal dimuat
+            System.err.println("File main.gif tidak ditemukan!");
+            setBackground(Color.DARK_GRAY);
         }
     }
 }
