@@ -25,7 +25,12 @@ public class MazeGame extends JPanel {
     private int animationIndex = 0;
     private boolean solving = false;
 
+<<<<<<< HEAD
     // UI Components
+=======
+    private Image backgroundImage;
+
+>>>>>>> main
     private JButton btnBFS, btnDFS, btnDijkstra, btnAStar;
     private JButton btnGenerate, btnBack;
     private JLabel lblStatus, lblCost;
@@ -35,9 +40,23 @@ public class MazeGame extends JPanel {
         this.frame = frame;
         setLayout(null);
 
+<<<<<<< HEAD
         // --- WARNA BACKGROUND COKELAT MINECRAFT ---
         setBackground(new Color(116, 82, 55));
         // ------------------------------------------
+=======
+        try {
+            java.net.URL bgUrl = getClass().getResource("/Asset/maze.jpg");
+            if (bgUrl != null) {
+                backgroundImage = new ImageIcon(bgUrl).getImage();
+            } else {
+                System.out.println("Gagal menemukan file: /Asset/maze.jpg");
+                setBackground(new Color(116, 82, 55)); // Fallback warna cokelat
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+>>>>>>> main
 
         generator = new MazeGenerator();
         solver = new MazeSolver();
@@ -51,17 +70,26 @@ public class MazeGame extends JPanel {
         int screenW = screen.width;
         int screenH = screen.height;
 
+<<<<<<< HEAD
         // --- KONFIGURASI TOMBOL HORIZONTAL DI BAWAH ---
         int bw = 140; // Lebar tombol
         int bh = 40;  // Tinggi tombol
         int gap = 15; // Jarak antar tombol
+=======
+        int bw = 140;
+        int bh = 40;
+        int gap = 15;
+>>>>>>> main
         int totalElements = 6;
 
         int totalWidth = (bw * totalElements) + (gap * (totalElements - 1));
         int startX = (screenW - totalWidth) / 2;
         int bottomY = screenH - 140;
 
+<<<<<<< HEAD
         // Tombol Back
+=======
+>>>>>>> main
         btnBack = new JButton("← Back");
         btnBack.setBounds(20, 20, 120, 40);
         btnBack.setFont(new Font("Arial", Font.BOLD, 14));
@@ -70,7 +98,10 @@ public class MazeGame extends JPanel {
         btnBack.addActionListener(e -> frame.showDashboard());
         add(btnBack);
 
+<<<<<<< HEAD
         // Judul
+=======
+>>>>>>> main
         JLabel title = new JLabel("MAZE SOLVER");
         title.setBounds((screenW - 400) / 2, 20, 400, 40);
         title.setFont(new Font("Arial", Font.BOLD, 28));
@@ -78,13 +109,19 @@ public class MazeGame extends JPanel {
         title.setHorizontalAlignment(SwingConstants.CENTER);
         add(title);
 
+<<<<<<< HEAD
         // Combo Box Size
+=======
+>>>>>>> main
         sizeCombo = new JComboBox<>(new String[]{"15x15", "20x20", "25x25", "30x30"});
         sizeCombo.setSelectedIndex(2);
         sizeCombo.setBounds(startX, bottomY, bw, bh);
         add(sizeCombo);
 
+<<<<<<< HEAD
         // Tombol Generate
+=======
+>>>>>>> main
         btnGenerate = new JButton("New Maze");
         btnGenerate.setBounds(startX + (bw + gap), bottomY, bw, bh);
         btnGenerate.setFont(new Font("Arial", Font.BOLD, 13));
@@ -99,20 +136,30 @@ public class MazeGame extends JPanel {
         });
         add(btnGenerate);
 
+<<<<<<< HEAD
         // Tombol Algoritma
+=======
+>>>>>>> main
         btnBFS = createAlgoButton("BFS", startX + (bw + gap) * 2, bottomY, "BFS");
         btnDFS = createAlgoButton("DFS", startX + (bw + gap) * 3, bottomY, "DFS");
         btnDijkstra = createAlgoButton("Dijkstra", startX + (bw + gap) * 4, bottomY, "DIJKSTRA");
         btnAStar = createAlgoButton("A* Star", startX + (bw + gap) * 5, bottomY, "ASTAR");
         add(btnBFS); add(btnDFS); add(btnDijkstra); add(btnAStar);
 
+<<<<<<< HEAD
         // Status & Cost
+=======
+>>>>>>> main
         lblStatus = new JLabel("Ready");
         lblStatus.setBounds((screenW - 300) / 2, bottomY + bh + 15, 300, 30);
         lblStatus.setHorizontalAlignment(SwingConstants.CENTER);
         lblStatus.setFont(new Font("Arial", Font.BOLD, 14));
         lblStatus.setOpaque(true);
+<<<<<<< HEAD
         lblStatus.setBackground(Color.LIGHT_GRAY);
+=======
+        lblStatus.setBackground(new Color(255, 255, 255, 200));
+>>>>>>> main
         add(lblStatus);
 
         lblCost = new JLabel("Path Cost: - | Steps: -");
@@ -137,7 +184,11 @@ public class MazeGame extends JPanel {
         start.isStart = true; end.isEnd = true;
         solution = null; visited = null;
         lblStatus.setText("Maze Generated!");
+<<<<<<< HEAD
         lblStatus.setBackground(new Color(76, 175, 80));
+=======
+        lblStatus.setBackground(new Color(76, 175, 80, 200));
+>>>>>>> main
         repaint();
     }
 
@@ -145,7 +196,11 @@ public class MazeGame extends JPanel {
         if (solving) return;
         solving = true; setButtonsEnabled(false);
         lblStatus.setText("Solving with " + algorithm + "...");
+<<<<<<< HEAD
         lblStatus.setBackground(new Color(255, 193, 7));
+=======
+        lblStatus.setBackground(new Color(255, 193, 7, 200));
+>>>>>>> main
 
         for (Cell[] row : maze) { for (Cell c : row) { c.visited = false; c.inSolution = false; }}
 
@@ -162,17 +217,27 @@ public class MazeGame extends JPanel {
             animateSearch();
         } else {
             lblStatus.setText("No Solution Found!");
+<<<<<<< HEAD
             lblStatus.setBackground(Color.RED);
+=======
+            lblStatus.setBackground(new Color(244, 67, 54, 200));
+>>>>>>> main
             solving = false; setButtonsEnabled(true);
         }
     }
 
+<<<<<<< HEAD
     // --- ANIMASI SCANNING DIPERCEPAT (BATCH PROCESSING) ---
     private void animateSearch() {
         animationIndex = 0;
         List<Cell> visitList = new ArrayList<>(visited);
 
         // Delay dikurangi ke 5ms dan memproses 5 sel sekaligus per tick
+=======
+    private void animateSearch() {
+        animationIndex = 0;
+        List<Cell> visitList = new ArrayList<>(visited);
+>>>>>>> main
         animationTimer = new Timer(5, e -> {
             for (int i = 0; i < 5; i++) {
                 if (animationIndex < visitList.size()) {
@@ -198,9 +263,18 @@ public class MazeGame extends JPanel {
                 repaint();
             } else {
                 ((Timer) e.getSource()).stop();
+<<<<<<< HEAD
                 int cost = solution.stream().mapToInt(c -> c.terrain.cost).sum();
                 lblStatus.setText("Solution Found!");
                 lblStatus.setBackground(new Color(76, 175, 80));
+=======
+
+                main.SoundManager.playSound("sound3.wav");
+
+                int cost = solution.stream().mapToInt(c -> c.terrain.cost).sum();
+                lblStatus.setText("🏆 Solution Found!");
+                lblStatus.setBackground(new Color(76, 175, 80, 200));
+>>>>>>> main
                 lblCost.setText("Path Cost: " + cost + " | Steps: " + solution.size());
                 solving = false; setButtonsEnabled(true);
             }
@@ -217,12 +291,27 @@ public class MazeGame extends JPanel {
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
+<<<<<<< HEAD
         if (maze == null) return;
 
         Graphics2D g2d = (Graphics2D) g;
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
         // --- DINAMIS CENTER CALCULATION ---
+=======
+        Graphics2D g2d = (Graphics2D) g;
+
+        if (backgroundImage != null) {
+            g2d.drawImage(backgroundImage, 0, 0, getWidth(), getHeight(), this);
+            g2d.setColor(new Color(0, 0, 0, 80));
+            g2d.fillRect(0, 0, getWidth(), getHeight());
+        }
+
+        if (maze == null) return;
+
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+>>>>>>> main
         int totalMazeWidth = cols * cellSize;
         int totalMazeHeight = rows * cellSize;
         int offsetX = (getWidth() - totalMazeWidth) / 2;
@@ -234,6 +323,7 @@ public class MazeGame extends JPanel {
                 int x = offsetX + c * cellSize;
                 int y = offsetY + r * cellSize;
 
+<<<<<<< HEAD
                 if (cell.isStart) g2d.setColor(new Color(76, 175, 80));
                 else if (cell.isEnd) g2d.setColor(new Color(244, 67, 54));
                 else if (cell.inSolution) g2d.setColor(Color.YELLOW);
@@ -243,6 +333,20 @@ public class MazeGame extends JPanel {
                 g2d.fillRect(x, y, cellSize, cellSize);
 
                 g2d.setColor(Color.BLACK);
+=======
+                if (cell.isStart) g2d.setColor(new Color(76, 175, 80, 220));
+                else if (cell.isEnd) g2d.setColor(new Color(244, 67, 54, 220));
+                else if (cell.inSolution) g2d.setColor(new Color(255, 255, 0, 200));
+                else if (cell.visited) g2d.setColor(new Color(173, 216, 230, 130));
+                else {
+                    Color tc = cell.terrain.color;
+                    g2d.setColor(new Color(tc.getRed(), tc.getGreen(), tc.getBlue(), 180));
+                }
+
+                g2d.fillRect(x, y, cellSize, cellSize);
+
+                g2d.setColor(new Color(40, 30, 20)); //
+>>>>>>> main
                 g2d.setStroke(new BasicStroke(2));
                 if (cell.walls[0]) g2d.drawLine(x, y, x + cellSize, y);
                 if (cell.walls[1]) g2d.drawLine(x + cellSize, y, x + cellSize, y + cellSize);

@@ -3,7 +3,10 @@ package maze;
 import java.awt.Color;
 import java.util.Objects;
 
+<<<<<<< HEAD
 // ==================== CELL CLASS ====================
+=======
+>>>>>>> main
 public class Cell {
     public int row, col;
     public boolean[] walls = {true, true, true, true}; // Top, Right, Bottom, Left
@@ -35,7 +38,10 @@ public class Cell {
     }
 }
 
+<<<<<<< HEAD
 // ==================== TERRAIN ENUM ====================
+=======
+>>>>>>> main
 enum Terrain {
     GRASS(1, new Color(144, 238, 144)),     // Hijau Muda
     MUD(5, new Color(139, 90, 43)),         // Cokelat

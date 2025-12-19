@@ -14,7 +14,10 @@ public class GameFrame extends JFrame {
     public GameFrame() {
         setTitle("Map Board Game");
 
+<<<<<<< HEAD
         // --- SETTING FULLSCREEN ---
+=======
+>>>>>>> main
         setUndecorated(true);
         setExtendedState(JFrame.MAXIMIZED_BOTH);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
@@ -22,7 +25,6 @@ public class GameFrame extends JFrame {
         cardLayout = new CardLayout();
         mainPanel = new JPanel(cardLayout);
 
-        // REGISTER ALL PANELS
         mainPanel.add(new DashboardPanel(this), "DASHBOARD");
         mainPanel.add(new ModeSelectionPanel(this), "MODE");
 
@@ -32,7 +34,6 @@ public class GameFrame extends JFrame {
         setVisible(true);
     }
 
-    // ===== NAVIGATION METHODS =====
     public void showDashboard() {
         cardLayout.show(mainPanel, "DASHBOARD");
     }
@@ -51,7 +52,10 @@ public class GameFrame extends JFrame {
         gamePanel.requestFocusInWindow();
     }
 
+<<<<<<< HEAD
     // ===== MAZE GAME METHOD =====
+=======
+>>>>>>> main
     public void showMazeGame() {
         if (mazeGame != null) {
             mainPanel.remove(mazeGame);
