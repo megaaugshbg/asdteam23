@@ -14,27 +14,21 @@ public class ModeSelectionPanel extends JPanel {
     public ModeSelectionPanel(GameFrame frame) {
         this.frame = frame;
         setLayout(null);
-        // Set background panel utama transparan agar GIF terlihat
         setOpaque(false);
 
-        // Hitung posisi tengah layar
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         int screenWidth = screenSize.width;
         int screenHeight = screenSize.height;
         int centerX = screenWidth / 2;
         int centerY = screenHeight / 2;
 
-        // ===== 1. UI COMPONENTS =====
-
-        // Title
         JLabel title = new JLabel("Choose Number of Players");
-        title.setFont(new Font("Arial", Font.BOLD, 36)); // Ukuran diperbesar sedikit
+        title.setFont(new Font("Arial", Font.BOLD, 36));
         title.setHorizontalAlignment(SwingConstants.CENTER);
         title.setBounds(centerX - 300, centerY - 200, 600, 50);
-        title.setForeground(Color.WHITE); // Ubah ke putih agar kontras dengan background
+        title.setForeground(Color.WHITE);
         add(title);
 
-        // Radio Buttons Group
         playerGroup = new ButtonGroup();
 
         int radioX = centerX - 80;
@@ -58,7 +52,6 @@ public class ModeSelectionPanel extends JPanel {
         add(p3);
         add(p4);
 
-        // Start Button
         JButton startBtn = new JButton("Start Game");
         startBtn.setBounds(centerX - 100, centerY + 100, 200, 50);
         startBtn.setFont(new Font("Arial", Font.BOLD, 18));
@@ -70,7 +63,6 @@ public class ModeSelectionPanel extends JPanel {
         });
         add(startBtn);
 
-        // Back Button
         JButton backBtn = new JButton("Back");
         backBtn.setBounds(centerX - 100, centerY + 170, 200, 45);
         backBtn.setFont(new Font("Arial", Font.PLAIN, 16));
@@ -80,7 +72,6 @@ public class ModeSelectionPanel extends JPanel {
         });
         add(backBtn);
 
-        // ===== 2. BACKGROUND GIF (TAMBAHKAN PALING TERAKHIR) =====
         URL gifUrl = getClass().getResource("/Asset/main.gif");
         if (gifUrl != null) {
             backgroundLabel = new JLabel(new ImageIcon(gifUrl));

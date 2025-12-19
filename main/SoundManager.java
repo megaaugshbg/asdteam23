@@ -6,7 +6,6 @@ import java.net.URL;
 public class SoundManager {
     public static void playSound(String fileName) {
         try {
-            // Menggunakan "/" di depan Asset sangat krusial agar mencari dari root src
             URL url = SoundManager.class.getResource("/Asset/" + fileName);
 
             if (url == null) {

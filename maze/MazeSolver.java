@@ -4,7 +4,6 @@ import java.util.*;
 
 public class MazeSolver {
 
-    // ===== RESULT CONTAINER =====
     public static class Result {
         public List<Cell> path;
         public Set<Cell> visitedCells;
@@ -15,7 +14,6 @@ public class MazeSolver {
         }
     }
 
-    // ===== BFS =====
     public Result solveBFS(Cell[][] maze, Cell start, Cell end) {
         Queue<Cell> q = new LinkedList<>();
         Map<Cell, Cell> parent = new HashMap<>();
@@ -40,7 +38,6 @@ public class MazeSolver {
         return new Result(buildPath(parent, start, end), visited);
     }
 
-    // ===== DFS =====
     public Result solveDFS(Cell[][] maze, Cell start, Cell end) {
         Stack<Cell> stack = new Stack<>();
         Map<Cell, Cell> parent = new HashMap<>();
@@ -65,7 +62,6 @@ public class MazeSolver {
         return new Result(buildPath(parent, start, end), visited);
     }
 
-    // ===== DIJKSTRA =====
     public Result solveDijkstra(Cell[][] maze, Cell start, Cell end) {
         Map<Cell, Integer> dist = new HashMap<>();
         Map<Cell, Cell> parent = new HashMap<>();
@@ -96,7 +92,6 @@ public class MazeSolver {
         return new Result(buildPath(parent, start, end), visited);
     }
 
-    // ===== A* =====
     public Result solveAStar(Cell[][] maze, Cell start, Cell end) {
         Map<Cell, Integer> g = new HashMap<>();
         Map<Cell, Integer> f = new HashMap<>();
@@ -130,7 +125,6 @@ public class MazeSolver {
         return new Result(buildPath(parent, start, end), visited);
     }
 
-    // ===== HELPERS =====
     private List<Cell> getNeighbors(Cell c, Cell[][] maze) {
         List<Cell> list = new ArrayList<>();
         int r = c.row, col = c.col;

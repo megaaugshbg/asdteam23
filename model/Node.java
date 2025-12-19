@@ -17,8 +17,7 @@ public class Node {
         this.x = x;
         this.y = y;
 
-        // KELIPATAN 5 ADALAH BINTANG (BONUS TURN)
-        // Ini tidak mengganggu shortcut, karena shortcut butuh START di Prima
+
         this.isStar = (id % 5 == 0 && id < 64);
     }
 
@@ -29,7 +28,6 @@ public class Node {
     }
 
     public void draw(Graphics2D g) {
-        // --- LOGIKA GAMBAR ---
         if (isStar) {
             g.setColor(new Color(255, 215, 0)); // Emas
             g.fillOval(x - 20, y - 20, 40, 40);
@@ -50,18 +48,18 @@ public class Node {
             g.drawOval(x - 18, y - 18, 36, 36);
         }
 
-        // Nomor
+
         g.setColor(Color.BLACK);
         g.setFont(new Font("Arial", Font.BOLD, 12));
         g.drawString(String.valueOf(id), x - 6, y + 5);
 
-        // Icon Bintang
+
         if (isStar) {
             g.setColor(Color.YELLOW);
             g.drawString("", x - 8, y + 28);
         }
 
-        // Icon Poin
+
         if (hasScore) {
             g.setColor(new Color(255, 69, 0));
             g.setFont(new Font("Arial", Font.BOLD, 10));

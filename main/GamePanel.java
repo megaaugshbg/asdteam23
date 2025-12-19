@@ -19,14 +19,12 @@ public class GamePanel extends JPanel {
     private int currentPlayerIndex = 0;
     private final Image mapImage;
 
-    // UI
     private JButton rollDiceBtn, backBtn;
     private JLabel statusLabel;
     private JTextArea scoreArea;
     private JPanel statusPanel;
     private JLabel legend;
 
-    // Animasi
     private Timer movementTimer;
     private List<Node> currentPathQueue;
     private int pathIndex = 0;
@@ -163,12 +161,9 @@ public class GamePanel extends JPanel {
         if (isGreen) {
             msg = "🎲Rolled " + steps + " (GREEN)\n Move FORWARD!";
             path = calculateForwardPath(p, steps);
-            // Opsional: SoundManager.playSound("sound_move.wav");
         } else {
             msg = " Rolled " + steps + " (RED)\n Move BACKWARD!";
             path = calculateBackwardPath(p, steps);
-
-            // EFEK SUARA DISINI (Sesuaikan nama file sound2 anda)
             SoundManager.playSound("sound2.wav");
         }
 
@@ -178,7 +173,6 @@ public class GamePanel extends JPanel {
         startAnimation(p, path);
     }
 
-    // --- LOGIKA UTAMA: PERGERAKAN & SHORTCUT ---
     private List<Node> calculateForwardPath(Player p, int steps) {
         List<Node> path = new ArrayList<>();
         Node current = gameMap.getNodeById(p.currentNode);
@@ -303,7 +297,6 @@ public class GamePanel extends JPanel {
         GameController.movePlayer(p, finalNode, gameMap);
 
         if (p.currentNode == 64) {
-            // EFEK SUARA MENANG DISINI (Sesuaikan nama file sound1 anda)
             SoundManager.playSound("sound1.wav");
 
             JOptionPane.showMessageDialog(this, "🏆 " + p.name + " WINS!");

@@ -15,7 +15,6 @@ public class GameMap {
         nodes = new ArrayList<>();
         shortcuts = new HashMap<>();
 
-        // --- KOORDINAT NODE (JANGAN UBAH) ---
         nodes.add(new Node(1, 100, 534)); nodes.add(new Node(2, 142, 525));
         nodes.add(new Node(3, 166, 497)); nodes.add(new Node(4, 162, 455));
         nodes.add(new Node(5, 158, 414)); nodes.add(new Node(6, 155, 366));
@@ -52,9 +51,6 @@ public class GameMap {
         finishNode = getNodeById(64);
         initializeNeighbors();
 
-        // ------------------------------------------
-        // SHORTCUT PASTI (HARDCODED)
-        // ------------------------------------------
         shortcuts.clear();
 
         shortcuts.put(8, 13);
@@ -65,7 +61,7 @@ public class GameMap {
 
         System.out.println(">>> FIXED SHORTCUTS LOADED: " + shortcuts);
 
-        // KOIN RANDOM
+
         setupSpecialNodes();
     }
 

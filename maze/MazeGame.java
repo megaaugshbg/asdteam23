@@ -25,10 +25,8 @@ public class MazeGame extends JPanel {
     private int animationIndex = 0;
     private boolean solving = false;
 
-    // Tambahan untuk Background Image
     private Image backgroundImage;
 
-    // UI Components
     private JButton btnBFS, btnDFS, btnDijkstra, btnAStar;
     private JButton btnGenerate, btnBack;
     private JLabel lblStatus, lblCost;
@@ -38,7 +36,6 @@ public class MazeGame extends JPanel {
         this.frame = frame;
         setLayout(null);
 
-        // --- LOAD GAMBAR BACKGROUND (maze.jpg dari package Asset) ---
         try {
             java.net.URL bgUrl = getClass().getResource("/Asset/maze.jpg");
             if (bgUrl != null) {
@@ -72,7 +69,6 @@ public class MazeGame extends JPanel {
         int startX = (screenW - totalWidth) / 2;
         int bottomY = screenH - 140;
 
-        // Tombol Back
         btnBack = new JButton("← Back");
         btnBack.setBounds(20, 20, 120, 40);
         btnBack.setFont(new Font("Arial", Font.BOLD, 14));
@@ -81,7 +77,6 @@ public class MazeGame extends JPanel {
         btnBack.addActionListener(e -> frame.showDashboard());
         add(btnBack);
 
-        // Judul
         JLabel title = new JLabel("MAZE SOLVER");
         title.setBounds((screenW - 400) / 2, 20, 400, 40);
         title.setFont(new Font("Arial", Font.BOLD, 28));
@@ -89,13 +84,11 @@ public class MazeGame extends JPanel {
         title.setHorizontalAlignment(SwingConstants.CENTER);
         add(title);
 
-        // Size Combo
         sizeCombo = new JComboBox<>(new String[]{"15x15", "20x20", "25x25", "30x30"});
         sizeCombo.setSelectedIndex(2);
         sizeCombo.setBounds(startX, bottomY, bw, bh);
         add(sizeCombo);
 
-        // Tombol Generate
         btnGenerate = new JButton("New Maze");
         btnGenerate.setBounds(startX + (bw + gap), bottomY, bw, bh);
         btnGenerate.setFont(new Font("Arial", Font.BOLD, 13));
@@ -110,14 +103,12 @@ public class MazeGame extends JPanel {
         });
         add(btnGenerate);
 
-        // Tombol Algoritma
         btnBFS = createAlgoButton("BFS", startX + (bw + gap) * 2, bottomY, "BFS");
         btnDFS = createAlgoButton("DFS", startX + (bw + gap) * 3, bottomY, "DFS");
         btnDijkstra = createAlgoButton("Dijkstra", startX + (bw + gap) * 4, bottomY, "DIJKSTRA");
         btnAStar = createAlgoButton("A* Star", startX + (bw + gap) * 5, bottomY, "ASTAR");
         add(btnBFS); add(btnDFS); add(btnDijkstra); add(btnAStar);
 
-        // Status & Cost Label
         lblStatus = new JLabel("Ready");
         lblStatus.setBounds((screenW - 300) / 2, bottomY + bh + 15, 300, 30);
         lblStatus.setHorizontalAlignment(SwingConstants.CENTER);
@@ -207,7 +198,6 @@ public class MazeGame extends JPanel {
             } else {
                 ((Timer) e.getSource()).stop();
 
-                // Panggil sound kemenangan
                 main.SoundManager.playSound("sound3.wav");
 
                 int cost = solution.stream().mapToInt(c -> c.terrain.cost).sum();
@@ -231,10 +221,8 @@ public class MazeGame extends JPanel {
         super.paintComponent(g);
         Graphics2D g2d = (Graphics2D) g;
 
-        // --- 1. GAMBAR BACKGROUND maze.jpg ---
         if (backgroundImage != null) {
             g2d.drawImage(backgroundImage, 0, 0, getWidth(), getHeight(), this);
-            // Tambahkan overlay gelap agar Grid Maze lebih menonjol
             g2d.setColor(new Color(0, 0, 0, 80));
             g2d.fillRect(0, 0, getWidth(), getHeight());
         }
@@ -243,20 +231,17 @@ public class MazeGame extends JPanel {
 
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-        // Kalkulasi posisi tengah maze
         int totalMazeWidth = cols * cellSize;
         int totalMazeHeight = rows * cellSize;
         int offsetX = (getWidth() - totalMazeWidth) / 2;
         int offsetY = (getHeight() - totalMazeHeight - 100) / 2 + 30;
 
-        // --- 2. GAMBAR ISI CELL MAZE ---
         for (int r = 0; r < rows; r++) {
             for (int c = 0; c < cols; c++) {
                 Cell cell = maze[r][c];
                 int x = offsetX + c * cellSize;
                 int y = offsetY + r * cellSize;
 
-                // Memberikan Alpha (transparansi) agar background sedikit terlihat di bawah cell
                 if (cell.isStart) g2d.setColor(new Color(76, 175, 80, 220));
                 else if (cell.isEnd) g2d.setColor(new Color(244, 67, 54, 220));
                 else if (cell.inSolution) g2d.setColor(new Color(255, 255, 0, 200));
@@ -268,8 +253,7 @@ public class MazeGame extends JPanel {
 
                 g2d.fillRect(x, y, cellSize, cellSize);
 
-                // --- 3. GAMBAR DINDING CELL ---
-                g2d.setColor(new Color(40, 30, 20)); // Cokelat dinding gelap
+                g2d.setColor(new Color(40, 30, 20)); //
                 g2d.setStroke(new BasicStroke(2));
                 if (cell.walls[0]) g2d.drawLine(x, y, x + cellSize, y);
                 if (cell.walls[1]) g2d.drawLine(x + cellSize, y, x + cellSize, y + cellSize);
